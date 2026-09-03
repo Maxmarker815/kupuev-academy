@@ -1,0 +1,622 @@
+/* =====================================================================
+   KUPUEV ACADEMY — светлая тема с тёмно-синими панелями
+   Текст читается на светлом, шапка и программа курса — глубокий navy.
+   Один файл на платформу и на уроки. Печатная книга (guide/index.html)
+   этот файл НЕ подключает и остаётся бумажной.
+   ===================================================================== */
+
+:root{
+  /* светлая часть — там, где читают */
+  --paper:        #F6F8FC;   /* фон страницы            */
+  --paper-2:      #FFFFFF;   /* карточки, панели        */
+  --paper-3:      #EDF2F9;   /* наведение, заливка      */
+  --ink:          #16233D;   /* основной текст — тёмно-синий, не чёрный */
+  --ink-2:        #44567A;
+  --ink-3:        #74839E;
+  --ink-4:        #9AA7BE;
+  --rule:         #E3E9F3;
+  --rule-strong:  #CBD6E6;
+
+  /* тёмно-синий — панели вокруг */
+  --navy:         #040057;
+  --navy-2:       #0D0D6B;
+  --navy-3:       #1A1A80;
+  --navy-line:    #2B2B92;
+
+  /* смысловые цвета */
+  --accent:       #2563EB;
+  --accent-soft:  #1D4ED8;
+  --signal:       #DC4B32;
+  --signal-dark:  #B93A24;
+  --signal-tint:  #FDEEEA;
+  --teal:         #2563EB;
+  --teal-dark:    #1D4ED8;
+  --teal-tint:    #E9F0FE;
+  --highlight:    #FFF6E0;
+  --warn:         #C4890F;
+  --green:        #17A46B;
+  --green-dark:   #0F8555;
+  --green-tint:   #E6F7EF;
+
+  --sans:  'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Заголовки тоже Inter: антиква читалась «книжно», а платформа — не книга.
+     Вернуть прежний вид: 'Instrument Serif', Georgia, serif */
+  --serif: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:  'JetBrains Mono', ui-monospace, monospace;
+
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(22,35,61,.06), 0 1px 3px rgba(22,35,61,.05);
+  --shadow:    0 2px 6px rgba(22,35,61,.06), 0 12px 32px rgba(22,35,61,.08);
+}
+
+/* Заголовки: Inter требует веса и плотной посадки, иначе выглядит вяло */
+h1, h2, h3, h4, .c-lhead h1, .hero .big, .section-head h2, .modal h3, .login h1{
+  font-weight:600 !important; letter-spacing:-.015em !important; }
+.hero .big{ font-weight:700 !important; letter-spacing:-.03em !important; }
+
+/* Мелкие подписи были моноширинными заглавными — отсюда ощущение
+   «сплошных больших букв». Тот же Inter, разрядка меньше, размер чуть больше. */
+.stat .l, .section-head .sub, .c-lnum, .who, .field label, table.list th{
+  font-family:var(--sans) !important; text-transform:none !important;
+  letter-spacing:0 !important; font-weight:600 !important; }
+.stat .l{ font-size:17px !important; color:var(--ink-3) !important; margin-bottom:10px !important; }
+.field label{ font-size:13.5px !important; }
+table.list th{ font-size:13.5px !important; }
+.who{ font-size:13.5px !important; }
+.section-head .sub{ font-size:13.5px !important; }
+/* Подпись под названием школы убрана: её видит только тот, кто уже вошёл,
+   и она повторяется на каждом экране, ничего не сообщая. Вернуть — снять display:none. */
+.brand small, .c-brand small{ display:none !important; }
+/* Роль и имя справа в шапке — крупнее, чтобы уравновесить название слева */
+.topbar .who{ font-size:13.5px !important; font-weight:500 !important; }
+.topbar .who b{ font-size:17px !important; font-weight:600 !important; margin-top:2px; }
+
+html, body{ background:var(--paper); color:var(--ink); }
+body{ -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+      /* Различимые «I», «l» и единица — в инструкции постоянно встречаются
+         обозначения вроде I2C, A0, D8, LM35, и их нельзя путать. */
+      font-feature-settings:'cv05' 1,'cv08' 1,'ss02' 1; }
+/* Моноширинные цифры — только там, где числа стоят столбцом и должны
+   выравниваться. На крупных числах они дают рыхлость: каждая цифра
+   получает ширину нуля, и «121» выглядит разъехавшимся. */
+table.list td, table.list th, table.mx td, table.mx th{ font-variant-numeric:tabular-nums; }
+::selection{ background:rgba(37,99,235,.16); }
+
+*{ scrollbar-color:#C2CEE0 transparent; scrollbar-width:thin; }
+::-webkit-scrollbar{ width:10px; height:10px; }
+::-webkit-scrollbar-thumb{ background:#C6D2E2; border-radius:20px; border:2px solid var(--paper); }
+::-webkit-scrollbar-thumb:hover{ background:#A9B9CE; }
+::-webkit-scrollbar-track{ background:transparent; }
+
+/* =====================================================================
+   ТЁМНО-СИНИЕ ПАНЕЛИ
+   Внутри них переменные переопределены, поэтому весь текст и границы
+   внутри автоматически становятся «светлыми на тёмном».
+   ===================================================================== */
+.c-top, .c-rail, .topbar{
+  --paper:      #040057;
+  --paper-2:    #0D0D6B;
+  --paper-3:    #1A1A80;
+  --ink:        #F4F7FC;
+  --ink-2:      #C3D0E4;
+  --ink-3:      #93A3BE;
+  --ink-4:      #74849F;
+  --rule:       #26268C;
+  --rule-strong:#3A3AA3;
+  --accent:     #7FB6FF;
+  --teal-dark:  #9CC5FF;
+}
+/* Панели задают ещё и цвет текста — иначе он наследуется тёмным и пропадает. */
+.c-top, .c-rail, .topbar{ color:#F4F7FC !important; }
+.c-top *, .c-rail *, .topbar *{ border-color:rgba(255,255,255,.16); }
+/* Название школы — антиквой: это логотип, а не заголовок интерфейса */
+.c-brand, .topbar .brand{ font-family:'Instrument Serif', Georgia, serif !important;
+  font-weight:400 !important; letter-spacing:.03em !important; }
+.c-brand, .c-brand *, .topbar .brand, .topbar .brand *{ color:#FFFFFF !important; }
+/* название школы — крупнее, это фирменный блок */
+.topbar .brand{ font-size:31px !important; }
+/* Шапка выровнена с содержимым страницы: у .wrap отступ 20px, значит и здесь 20,
+   иначе название школы стоит на 10 пикселей правее слова «Группа» под ним. */
+.topbar-in{ padding:0 20px !important; min-height:84px !important; max-width:1560px !important; }
+
+/* Рабочая область шире — на широком мониторе не оставалось половины экрана
+   пустой. Карточки проектов крупнее, а не просто расставлены гуще. */
+.wrap{ max-width:1560px !important; }
+.proj-grid{ grid-template-columns:repeat(auto-fill,minmax(330px,1fr)) !important; gap:16px !important; }
+.pcard{ padding:20px 20px 18px !important; gap:11px !important; }
+.pcard h3{ font-size:22px !important; }
+.pcard .num{ font-size:12px !important; }
+.mark{ padding:11px 14px !important; font-size:15px !important; }
+.pcard .acts .btn{ font-size:13.5px !important; padding:7px 13px !important; }
+.hero{ padding:30px 32px !important; }
+.hero .big{ font-size:64px !important; }
+@media(min-width:1400px){ .topbar-in{ min-height:90px !important; } }
+@media(min-width:1400px){ .topbar .brand{ font-size:37px !important; } }
+.topbar .who{ color:#A6ADDE !important; }
+.topbar .who b{ color:#FFFFFF !important; }
+
+.c-top{  background:var(--navy) !important; border-bottom:1px solid rgba(255,255,255,.10) !important;
+         backdrop-filter:none !important; }
+.c-rail{ background:var(--navy) !important; border-right:1px solid rgba(255,255,255,.09) !important; }
+.topbar{ background:var(--navy) !important; border-bottom:1px solid rgba(255,255,255,.10) !important; }
+.c-item{ color:#CBD1F0 !important; }
+.c-item:hover{ background:#14147A !important; color:#FFF !important; }
+.c-item.on{ background:#1D1D8A !important; color:#FFF !important; border-left-color:#8FA8FF !important; }
+.c-item.on .c-n{ color:#A9BCFF !important; }
+.c-ok{ color:#5FD6A4 !important; }
+.c-rail-h{ color:#9098D0 !important; }
+.c-btn{ background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.18) !important;
+        color:#F4F7FC !important; }
+.c-btn:hover{ background:rgba(255,255,255,.16) !important; border-color:rgba(255,255,255,.34) !important; }
+.topbar .btn{ background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.18) !important;
+              color:#F4F7FC !important; }
+.topbar .btn:hover{ background:rgba(255,255,255,.16) !important; }
+.topbar .btn.ghost{ background:rgba(255,255,255,.10) !important;
+  border:1px solid rgba(255,255,255,.24) !important; color:#EDEFFC !important; }
+.topbar .btn.ghost:hover{ background:rgba(255,255,255,.18) !important; color:#FFF !important; }
+/* «Выйти» — крупнее: в шапке она одна, мельчить незачем */
+.topbar .btn{ padding:10px 20px !important; font-size:15px !important; border-radius:9px !important; }
+
+/* =====================================================================
+   СОДЕРЖИМОЕ УРОКОВ — места, где в книге цвет прописан жёстко
+   ===================================================================== */
+.callout{ border-radius:var(--r-md); }
+.callout.warn{ background:#FFF3E6 !important; }
+.callout.note{ background:#FFFAE9 !important; }
+.callout.tip { background:var(--teal-tint) !important; }
+.parts-thumbs .thumb{ background:#FFF !important; border-radius:var(--r-sm); }
+
+/* блоки кода оставляем тёмно-синими — на светлой странице так принято,
+   и они перекликаются с панелями */
+.code{ background:#040057 !important; color:#E8ECFB !important;
+       border:1px solid #2B2B92; border-radius:var(--r-md); overflow:hidden; }
+.code-head{ background:#0D0D6B !important; border-bottom:1px solid #2B2B92 !important;
+            color:#9EA6D8 !important; }
+.copy-btn{ border:1px solid rgba(255,255,255,.24) !important; color:#C3D0E4 !important; border-radius:6px; }
+.copy-btn.copied{ color:#5FD6A4 !important; border-color:#5FD6A4 !important; }
+/* комментарии в коде были тёмно-оливковыми — на синем фоне почти не видны */
+.code .cm{ color:#9098D0 !important; }
+.code .op{ color:#CBD1F0 !important; }
+
+.lesson img, .lesson image-slot{ border-radius:var(--r-sm); }
+
+/* Шапка проекта. В книге строка «Часть 4 / Проект четвёртый / …» лежала
+   вплотную к названию ради экономии места на листе — на экране разводим. */
+.lesson .proj-eyebrow{ margin-bottom:16px !important; line-height:1.6 !important;
+                       font-family:var(--sans) !important; text-transform:none !important;
+                       letter-spacing:0 !important; font-size:13.5px !important;
+                       font-weight:600 !important; color:var(--ink-3) !important; }
+.lesson .proj-title{ line-height:1.18 !important; margin-bottom:16px !important;
+                     padding-bottom:2px !important; overflow:visible !important; }
+/* Описание проекта: курсив на целом абзаце тормозит чтение и выглядит
+   как чужая вёрстка. Прямое начертание, крупнее, ограниченная строка. */
+.lesson .proj-lede{ font-style:normal !important; font-size:17px !important;
+  line-height:1.6 !important; color:var(--ink-2) !important; max-width:58ch !important;
+  margin-top:2px !important; }
+
+.lesson .proj-header{ margin-bottom:10px !important; }
+
+/* Большие цифры — номер проекта и номер части.
+   Были красной курсивной антиквой: красный на платформе означает «застрял»,
+   и самый крупный знак урока не должен быть выкрашен в цвет тревоги.
+   Тот же Inter, что везде, и фирменный тёмно-синий. */
+.lesson .proj-num, .lesson .num{
+  font-family:var(--sans) !important; font-style:normal !important;
+  font-weight:700 !important; color:#BCC8DD !important;
+  letter-spacing:-.04em !important; }
+/* Межстрочный меньше единицы поднимал цифру выше её места — выравниваем
+   верх цифры по первой строке текста справа. */
+.lesson .proj-num{ line-height:1 !important; padding-top:36px !important; }
+.lesson .num{ line-height:1 !important; margin-top:12px !important; }
+/* Тот же KPI-ряд, только внутри урока: сложность, время, компоненты,
+   библиотеки. Подписи обычными буквами, значения крупнее, линии тоньше. */
+.lesson .proj-stats{ margin-top:10px !important; margin-bottom:20px !important;
+  border-top:1px solid var(--rule) !important; border-bottom:1px solid var(--rule) !important;
+  padding:12px 0 !important; }
+.lesson .proj-stat{ padding:0 22px 0 0 !important; border-right:1px solid var(--rule) !important; }
+.lesson .proj-stat:not(:first-child){ padding-left:22px !important; }
+.lesson .proj-stat:last-child{ border-right:0 !important; }
+.lesson .proj-stat .l{ font-family:var(--sans) !important; text-transform:none !important;
+  letter-spacing:0 !important; font-size:12px !important; font-weight:500 !important;
+  color:var(--ink-3) !important; margin-bottom:5px !important; }
+.lesson .proj-stat .v{ font-family:var(--sans) !important; font-size:19px !important;
+  font-weight:600 !important; letter-spacing:-.02em !important;
+  font-variant-numeric:normal !important; color:var(--ink) !important; line-height:1.15 !important; }
+.lesson .proj-stat .v.stars{ font-size:17px !important; letter-spacing:.06em !important; }
+
+/* -----------------------------------------------------------------
+   Состав набора. В книге 36 компонентов уложены по пять в ряд, чтобы
+   влезть в лист — на экране подписи из-за этого нечитаемые.
+   Здесь: меньше карточек в ряду, крупнее фото и текст.
+   Печатной книги это не касается — она этот файл не подключает.
+   ----------------------------------------------------------------- */
+.lesson .comp-grid{ grid-template-columns:repeat(auto-fit,minmax(250px,1fr)) !important;
+                    border:1px solid var(--rule-strong); border-right:0; border-bottom:0;
+                    border-radius:var(--r-md); overflow:hidden; }
+/* Таблица набора шире колонки текста — выходит за её края и занимает
+   всё свободное место. Текст при этом остаётся узким и читаемым. */
+@media(min-width:1500px){ .lesson .comp-grid{ margin-left:-70px; margin-right:-70px; } }
+@media(min-width:1800px){ .lesson .comp-grid{ margin-left:-130px; margin-right:-130px; } }
+.lesson .comp{ min-height:0 !important; padding:14px 14px 16px !important; gap:6px !important;
+               background:#FFF !important; }
+.lesson .comp-head{ font-size:10px !important; letter-spacing:.1em !important; }
+.lesson .comp-icon{ height:108px !important; background:var(--paper-3);
+                    border-radius:var(--r-sm); margin-top:auto; }
+.lesson .comp-icon img{ object-fit:contain !important; padding:6px; }
+.lesson .comp-name{ font-size:12px !important; line-height:1.25 !important; }
+.lesson .comp-desc{ font-size:10px !important; line-height:1.5 !important; }
+.lesson .code pre, .lesson .code{ color:#E8ECFB !important; }
+
+/* =====================================================================
+   ПЛАТФОРМА: кабинеты
+   ===================================================================== */
+.panel, .card, .stat, .pcard, .scrollx{ border-radius:var(--r-lg) !important;
+         border:1px solid var(--rule) !important; background:var(--paper-2) !important;
+         box-shadow:var(--shadow-sm); }
+.section-head{ border-bottom:1px solid var(--rule-strong) !important; }
+.tabs{ border-bottom:1px solid var(--rule-strong) !important; }
+.tabs button{ border:1px solid var(--rule) !important; border-bottom:0 !important;
+              background:var(--paper-2) !important; color:var(--ink-2) !important;
+              border-radius:var(--r-sm) var(--r-sm) 0 0 !important; }
+.tabs button.on{ background:var(--navy) !important; border-color:var(--navy) !important; color:#FFF !important; }
+
+.btn{ border:1px solid var(--rule-strong) !important; background:#FFF !important;
+      color:var(--ink) !important; border-radius:var(--r-sm) !important; font-weight:500;
+      box-shadow:var(--shadow-sm); }
+/* При наведении кнопка заливается фирменным синим — видно, что попал */
+.btn:hover{ background:var(--navy) !important; border-color:var(--navy) !important; color:#FFF !important; }
+/* Кнопка «Открыть урок» в блоке урока — крупнее остальных, она там главная */
+#lopen{ font-size:17px !important; padding:12px 23px !important; }
+
+/* Главные кнопки — фирменным синим шапки, чтобы цвет действия был один на весь сайт */
+.btn.primary{ background:var(--navy) !important; border-color:var(--navy) !important;
+              color:#FFF !important; font-weight:600; }
+.btn.primary:hover{ background:#1B1B8C !important; border-color:#1B1B8C !important; }
+.btn.ghost{ background:#FFF !important; border-color:var(--rule-strong) !important; color:var(--ink-2) !important; }
+.btn.ghost:hover{ background:var(--navy) !important; border-color:var(--navy) !important; color:#FFF !important; }
+
+.hero{ border:1px solid #2B2B92 !important; border-radius:var(--r-lg) !important;
+       background:linear-gradient(135deg,#040057 0%,#1E1E96 100%) !important;
+       color:#F4F7FC !important; box-shadow:var(--shadow);
+       /* внутри блока переменные светлые — любой текст на нём читается */
+       --ink:#FFFFFF; --ink-2:#D8DBF4; --ink-3:#A6ADDE; --ink-4:#8E96CF;
+       --rule:rgba(255,255,255,.18); --rule-strong:rgba(255,255,255,.30); }
+.hero{ position:relative !important; overflow:hidden !important; }
+/* Фотография текущего проекта справа: затемнена и растворяется в синий,
+   поэтому не мешает белому тексту слева. */
+.hero-photo{ position:absolute !important; top:0; right:0; bottom:0; left:38%;
+  z-index:0; background-size:cover; background-position:center 40%;
+  opacity:.42; filter:saturate(.85) brightness(.9);
+  -webkit-mask-image:linear-gradient(90deg, transparent 0%, rgba(0,0,0,.65) 45%, #000 100%);
+  mask-image:linear-gradient(90deg, transparent 0%, rgba(0,0,0,.65) 45%, #000 100%); }
+.hero > *:not(.hero-photo){ position:relative; z-index:1; }
+@media(max-width:860px){ .hero-photo{ display:none; } }
+.hero *{ color:inherit; }
+.hero .big, .hero .grow > div:first-child{ color:#FFF !important; }
+.hero .big small, .hero .big div{ color:#A6ADDE !important; }
+.hero .muted{ color:#D8DBF4 !important; }
+.hero .muted b{ color:#FFF !important; }
+.hero .bar{ background:rgba(255,255,255,.16) !important; border:0 !important; }
+.hero .bar i{ background:linear-gradient(90deg,#5FD6A4,#7FB6FF) !important; }
+.hero .btn{ background:rgba(255,255,255,.10) !important; border:1px solid rgba(255,255,255,.22) !important;
+            color:#FFF !important; }
+.hero .btn:hover{ background:rgba(255,255,255,.20) !important; }
+.hero .mark{ background:rgba(255,255,255,.10) !important; border:1px solid rgba(255,255,255,.22) !important;
+             color:#FFF !important; }
+.hero .mark .box{ border-color:rgba(255,255,255,.5) !important; }
+.hero .mark:hover{ background:var(--green) !important; border-color:var(--green) !important; }
+
+.bar{ background:var(--paper-3) !important; border:1px solid var(--rule) !important; }
+.bar i{ background:linear-gradient(90deg,var(--green),#5FD6A4) !important; }
+
+/* Экран входа: фотография справа, растворяется в белый.
+   Это витрина — единственное место, где фон уместен. На рабочих экранах
+   картинка под содержимым мешала бы читать статусы. */
+.login-bg{ position:fixed; top:0; right:0; bottom:0; left:50%; z-index:0; pointer-events:none;
+  background-color:#040057;
+  background-image:linear-gradient(160deg, rgba(4,0,87,.72) 0%, rgba(4,0,87,.92) 100%), var(--shot);
+  background-size:cover, cover; background-position:center, center 42%;
+  /* Длинное растворение: белый уходит далеко вправо, панель набирает
+     плотность только к правому краю — переход почти незаметный. */
+  -webkit-mask-image:linear-gradient(90deg, transparent 0%, rgba(0,0,0,.10) 18%,
+      rgba(0,0,0,.38) 38%, rgba(0,0,0,.72) 60%, rgba(0,0,0,.93) 80%, #000 100%);
+  mask-image:linear-gradient(90deg, transparent 0%, rgba(0,0,0,.10) 18%,
+      rgba(0,0,0,.38) 38%, rgba(0,0,0,.72) 60%, rgba(0,0,0,.93) 80%, #000 100%);
+  display:flex; align-items:flex-end; }
+/* Подпись сдвинута в плотную часть панели, но не в самый угол */
+.login-bg-cap{ margin-left:auto; padding:0 7vw 9vh 0; color:#FFF; }
+.login-bg-cap .n{ font-family:'Instrument Serif',Georgia,serif; font-size:96px; line-height:1;
+  color:#FFF; margin-bottom:10px; }
+.login-bg-cap .t{ font-size:19px; line-height:1.5; color:#C6D0EE; max-width:26ch; }
+.login{ position:relative; z-index:1; }
+/* Название школы — в левом верхнем углу страницы, как логотип, а не внутри
+   блока входа. На узком экране возвращается в поток над «Кто ты?». */
+.login-brand{ font-family:'Instrument Serif',Georgia,serif; font-size:31px; line-height:1;
+  letter-spacing:.03em; color:var(--navy); margin-bottom:34px; }
+@media(min-width:1100px){
+  .login-brand{ position:fixed; top:52px; left:48px; z-index:2; margin-bottom:0; }
+}
+/* Блок входа ближе к середине экрана — меньше вести мышь от центра */
+@media(min-width:1100px){ .login{ margin-left:max(6vw, calc(50vw - 520px)) !important;
+  margin-right:auto !important; margin-top:18vh !important; } }
+@media(max-width:900px){ .login-bg{ display:none; } }
+
+.role{ border:1px solid var(--rule) !important; background:#FFF !important;
+       border-radius:var(--r-md) !important; box-shadow:var(--shadow-sm); }
+.role:hover{ border-color:var(--accent) !important; background:var(--paper-3) !important; }
+/* Кружок роли: заливка фирменным синим, буква белая. Тонкая обводка
+   на белом фоне читалась как серая, хотя цвет был синий. */
+.role .ic{ background:#040057 !important; border:0 !important; color:#FFFFFF !important;
+           font-weight:700 !important; }
+.role:hover .ic{ background:#1B1B8C !important; color:#FFF !important; }
+.name-list button{ border:1px solid var(--rule) !important; background:#FFF !important;
+                   border-radius:var(--r-sm) !important; }
+.name-list button:hover{ border-color:var(--accent) !important; background:var(--teal-tint) !important; }
+.field input, .field select, .field textarea{ background:#FFF !important;
+      border:1px solid var(--rule-strong) !important; border-radius:var(--r-sm) !important; color:var(--ink) !important; }
+.field input:focus, .field select:focus, .field textarea:focus{
+      border-color:var(--accent) !important; box-shadow:0 0 0 3px rgba(37,99,235,.14); }
+
+.pcard.done { border-color:var(--green) !important;  background:var(--green-tint) !important; }
+.pcard.stuck{ border-color:var(--signal) !important; background:var(--signal-tint) !important; }
+.pcard.doing{ border-color:var(--warn) !important;   background:#FFF7E4 !important; }
+.pcard .note{ background:#FFF !important; border-left:3px solid var(--signal) !important; border-radius:6px; }
+/* Фотография собранного проекта: по названию не понять, что предстоит
+   собрать, а снимок отвечает на это мгновенно. */
+.pthumb{ aspect-ratio:4/3; overflow:hidden; border-radius:10px;
+  background:var(--paper-3); border:1px solid var(--rule); margin-bottom:2px; }
+.pthumb img{ width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .35s ease; }
+.pcard:hover .pthumb img{ transform:scale(1.04); }
+
+.mark{ border:1px solid var(--rule-strong) !important; background:#FFF !important;
+       border-radius:var(--r-sm) !important; color:var(--ink-2) !important; }
+.mark .box{ border:1px solid var(--rule-strong) !important; background:#FFF !important; }
+.mark:hover{ border-color:var(--green) !important; color:var(--ink) !important; }
+.mark.on{ background:var(--green) !important; border-color:var(--green) !important; color:#FFF !important; }
+.mark.on .box{ background:#FFF !important; border-color:#FFF !important; color:var(--green) !important; }
+.mark.on:hover{ background:var(--green-dark) !important; border-color:var(--green-dark) !important; }
+
+.chip.doing{ background:var(--warn) !important; border-color:var(--warn) !important; color:#FFF !important; }
+.chip.stuck{ background:var(--signal) !important; border-color:var(--signal) !important; color:#FFF !important; }
+.chip.done { background:var(--green)  !important; border-color:var(--green)  !important; color:#FFF !important; }
+.chip.todo { border-color:var(--rule-strong) !important; color:var(--ink-3) !important; }
+
+table.mx th, table.mx td{ border-color:var(--rule) !important; }
+/* Таблица группы была набрана мелко под лист — на экране увеличиваем умеренно. */
+table.mx{ font-size:13.5px !important; }
+table.mx thead th{ font-size:13.5px !important; padding:11px 5px !important; }
+table.mx tbody th{ font-size:17px !important; padding:10px 16px !important; }
+table.mx td.cell{ width:36px !important; height:36px !important; }
+.cell i{ line-height:36px !important; font-size:13.5px !important; }
+table.mx tbody td:last-child{ font-size:17px !important; font-weight:600; padding:0 14px !important; }
+table.mx thead th{ background:var(--paper-3) !important; color:var(--ink-2) !important; }
+table.mx tbody th{ background:#FFF !important; border-right:1px solid var(--rule-strong) !important; }
+table.mx thead th a.mxh{ color:var(--ink-2) !important; }
+table.mx thead th a.mxh:hover{ background:var(--navy) !important; color:#FFF !important; }
+.cell .s-todo{ background:#FFF !important; }
+.cell .s-doing{ background:var(--warn) !important; color:#FFF !important; }
+.cell .s-stuck{ background:var(--signal) !important; color:#FFF !important; }
+.cell .s-done { background:var(--green)  !important; color:#FFF !important; }
+.legend i[style*="F0D98A"]{ background:var(--warn) !important; }
+.legend i{ border:1px solid var(--rule-strong) !important; border-radius:3px;
+           width:16px !important; height:16px !important; }
+/* Легенда под таблицей была набрана мелким моношрифтом — не читалась. */
+.legend{ font-size:13.5px !important; gap:12px 22px !important; margin-top:14px !important;
+         align-items:center; line-height:1.5; }
+.legend span{ gap:8px !important; }
+.legend .muted{ font-family:var(--sans) !important; font-size:13.5px !important; }
+table.list th{ border-bottom:1px solid var(--rule-strong) !important; color:var(--ink-3) !important; }
+table.list td{ border-bottom:1px solid var(--rule) !important; }
+/* Блок «Кому нужна помощь» — преподаватель читает его на ходу, стоя у стола. */
+.stuck-item{ border-bottom:1px solid var(--rule) !important; padding:18px 0 !important; gap:16px !important; }
+.stuck-item .nm{ font-size:19px !important; }
+.stuck-item .muted{ font-size:17px !important; }
+.stuck-item .qt{ font-size:17px !important; padding:11px 15px !important; line-height:1.55; }
+.stuck-item .badge{ width:54px !important; height:54px !important; font-size:17px !important; }
+.stuck-item .btn.sm{ font-size:15px !important; padding:9px 17px !important; }
+
+/* KPI-ряд. Плашка — это подпись плюс число, и всё. Рамка вокруг числа
+   спорит с ним за внимание: глаз ловит прямоугольник раньше цифры.
+   Разделяем воздухом и одной волосяной линией, как принято на учебных
+   платформах, а не карточками. */
+.stat-row{ gap:0 !important; margin:26px 0 30px !important; padding:20px 0 !important;
+           border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); }
+.stat{ background:transparent !important; border:0 !important; box-shadow:none !important;
+       border-radius:0 !important; padding:2px 26px 2px 0 !important; }
+.stat + .stat{ border-left:1px solid var(--rule) !important; padding-left:26px !important; }
+.stat .l{ font-weight:500 !important; }
+.stat .v{ font-size:46px !important; font-weight:600 !important; letter-spacing:-.025em !important;
+          font-variant-numeric:normal !important; color:var(--ink) !important; }
+.stat .v small{ font-size:17px !important; font-weight:400 !important; color:var(--ink-3) !important; }
+/* Крупные числа — обычными пропорциональными цифрами */
+.hero .big{ font-variant-numeric:normal !important; }
+/* Кружок с номером проекта — указатель, а не статус: спокойный синий.
+   Красный в этом блоке ничего не выделял, потому что застряли все. */
+.stuck-item .badge{ background:#040057 !important; color:#FFFFFF !important;
+  border:0 !important; font-weight:700 !important; }
+.stuck-item .qt{ background:var(--paper) !important; border-left:3px solid var(--rule-strong) !important; border-radius:6px; }
+
+.modal-bg{ background:rgba(22,35,61,.45) !important; backdrop-filter:blur(3px); }
+.modal{ background:#FFF !important; border:1px solid var(--rule-strong) !important;
+        border-radius:var(--r-lg) !important; box-shadow:var(--shadow); }
+/* Полоска демо-режима. Была кричаще-жёлтой с моноширинным текстом и первой
+   бросалась в глаза — выглядела как отладочная строка. Тихая служебная
+   плашка: сообщает и не мешает. */
+.demo-flag{ background:#EDF1F8 !important; border-bottom:1px solid var(--rule) !important;
+  color:var(--ink-3) !important; font-family:var(--sans) !important;
+  font-size:13.5px !important; letter-spacing:0 !important; text-transform:none !important;
+  padding:9px 20px !important; font-weight:500; }
+.demo-flag b{ color:var(--ink-2); font-weight:600; }
+.reset-demo{ font-family:var(--sans) !important; font-size:13.5px !important;
+  color:var(--ink-2) !important; border-bottom:1px solid var(--rule-strong) !important;
+  margin-left:6px; }
+.reset-demo:hover{ color:var(--navy) !important; border-bottom-color:var(--navy) !important; }
+
+
+/* =====================================================================
+   ТЕЛЕФОН И УЗКИЙ ЭКРАН
+   Уроки собраны из книжной вёрстки, где ширины заданы в миллиметрах под
+   лист А4. На узком экране это давало горизонтальную прокрутку. Здесь всё
+   такое расшивается. Печатной книги это не касается — она этот файл
+   не подключает и печатается как раньше.
+   ===================================================================== */
+@media(max-width:820px){
+
+  /* блоки текста, ограниченные шириной листа */
+  .lesson .lede, .lesson .proj-lede, .lesson .cover-subtitle,
+  .lesson .cover-tagline, .lesson .section-opener .lede{ max-width:100% !important; }
+
+  /* двухколоночные сетки книги — в одну колонку */
+  .lesson .proj-header{ grid-template-columns:1fr !important; gap:8px !important; }
+  .lesson .proj-body{ grid-template-columns:1fr !important; gap:18px !important; }
+  .lesson .section-opener .toc-row{ grid-template-columns:auto 1fr auto !important; }
+
+  /* огромный номер проекта — по размеру экрана */
+  .lesson .proj-num{ font-size:56px !important; padding-top:0 !important; }
+  .lesson .num{ font-size:64px !important; }
+  .lesson .proj-title{ font-size:37px !important; }
+  .lesson .h-display, .lesson .cover-title{ font-size:31px !important; line-height:1.1 !important; }
+
+  /* ряд «сложность / время / компонентов / библиотеки» — в две колонки */
+  .lesson .proj-stats{ grid-template-columns:1fr 1fr !important; row-gap:12px !important; }
+  .lesson .proj-stat{ padding:0 14px 0 0 !important; }
+  .lesson .proj-stat:nth-child(2n){ border-right:0 !important; }
+  .lesson .proj-stat:nth-child(n+3){ padding-top:12px !important;
+    border-top:1px solid var(--rule) !important; }
+
+  /* состав набора — по одной карточке в ряд, без выхода за края */
+  .lesson .comp-grid{ grid-template-columns:1fr 1fr !important;
+    margin-left:0 !important; margin-right:0 !important; }
+
+  /* таблицы и код прокручиваются внутри себя, а не тянут страницу вбок */
+  .lesson table{ display:block !important; max-width:100% !important; overflow-x:auto !important; }
+  .lesson .code, .lesson pre{ max-width:100% !important; overflow-x:auto !important; }
+  .lesson img, .lesson image-slot{ max-width:100% !important; height:auto !important; }
+
+  /* ленты миниатюр не должны распирать страницу */
+  .lesson .parts-thumbs, .lesson .parts-thumbs-full{ flex-wrap:wrap !important; }
+
+  /* ---- кабинеты ---- */
+  .topbar-in{ min-height:64px !important; padding:10px 16px !important; }
+  .topbar .brand{ font-size:22px !important; }
+  .topbar .who{ font-size:12px !important; }
+  .topbar .who b{ font-size:13.5px !important; }
+  .wrap{ padding-left:16px !important; padding-right:16px !important; }
+
+  /* KPI-ряд: на узком экране разделители-вертикали не работают */
+  .stat-row{ grid-template-columns:1fr 1fr !important; padding:16px 0 !important; }
+  .stat{ padding:8px 12px 8px 0 !important; }
+  .stat + .stat{ border-left:0 !important; padding-left:0 !important; }
+  .stat .v{ font-size:37px !important; }
+  .stat .l{ font-size:13.5px !important; }
+
+  .hero{ padding:20px !important; }
+  .hero .big{ font-size:46px !important; }
+  .hero-acts .btn, .hero-acts .mark{ flex:1 1 auto; justify-content:center; }
+
+  .stuck-item{ flex-wrap:wrap !important; }
+  .stuck-item > div:last-child{ flex-direction:row !important; flex-wrap:wrap; width:100%; }
+  .stuck-item .btn.sm{ flex:1 1 auto; }
+  .stuck-item .nm{ font-size:17px !important; }
+  .stuck-item .qt{ font-size:15px !important; }
+
+  .section-head h2{ font-size:26px !important; }
+  .login-brand{ font-size:26px !important; }
+}
+
+/* очень узкие телефоны */
+@media(max-width:430px){
+  .lesson .comp-grid{ grid-template-columns:1fr !important; }
+  .lesson .proj-stats{ grid-template-columns:1fr !important; }
+  .lesson .proj-stat{ border-right:0 !important; padding:8px 0 !important;
+    border-top:1px solid var(--rule) !important; }
+  .stat-row{ grid-template-columns:1fr !important; }
+  .stat + .stat{ border-top:1px solid var(--rule) !important; padding-top:14px !important; }
+}
+
+/* =====================================================================
+   РАБОТА С КЛАВИАТУРЫ
+   По сайту можно ходить клавишей Tab, не касаясь мыши. Раньше не было
+   видно, на каком элементе стоишь. Обводка появляется только при работе
+   с клавиатуры (:focus-visible) — при клике мышью её нет.
+   ===================================================================== */
+:where(a, button, select, input, textarea, [tabindex]):focus{ outline:none; }
+:where(a, button, select, input, textarea, [tabindex]):focus-visible{
+  outline:3px solid #7FB6FF !important;
+  outline-offset:2px !important;
+  border-radius:6px;
+}
+/* На тёмно-синих панелях синяя обводка сливается — там белая */
+.topbar :focus-visible, .c-top :focus-visible, .c-rail :focus-visible,
+.hero :focus-visible, .login-bg :focus-visible{
+  outline-color:#FFFFFF !important;
+}
+/* Ссылка «перейти к содержимому» — первое, что получает фокус на странице */
+.skiplink{ position:absolute; left:-9999px; top:0; z-index:999;
+  background:var(--navy); color:#fff; padding:12px 18px; border-radius:0 0 8px 0;
+  font-weight:600; text-decoration:none; }
+.skiplink:focus{ left:0; }
+
+
+/* =====================================================================
+   ПУСТЫЕ СОСТОЯНИЯ
+   Момент, когда данных нет, должен выглядеть осмысленно, а не как сбой.
+   Особенно «никто не застрял» — это хорошая новость, а не пустота.
+   ===================================================================== */
+.empty{ text-align:center; padding:38px 24px !important;
+  font-family:var(--sans) !important; font-style:normal !important;
+  font-size:15px !important; color:var(--ink-3) !important; }
+.empty .ico{ width:54px; height:54px; border-radius:50%; margin:0 auto 16px;
+  display:grid; place-items:center; font-size:22px;
+  background:var(--paper-3); color:var(--ink-3); }
+.empty.ok .ico{ background:var(--green-tint); color:var(--green); font-weight:700; }
+.empty .t{ font-size:19px; font-weight:600; color:var(--ink); margin-bottom:8px; }
+.empty .s{ font-size:15px; color:var(--ink-3); line-height:1.55;
+  max-width:52ch; margin:0 auto; }
+table .empty{ padding:28px 16px !important; }
+
+
+/* =====================================================================
+   ОТКЛИК НА ДЕЙСТВИЕ
+   Нажатие должно быть подтверждено: кнопка проседает под пальцем,
+   изменённая карточка коротко подсвечивается, внизу появляется строка
+   с тем, что именно произошло. Полсекунды отклика отделяют приложение
+   от статичной страницы.
+   ===================================================================== */
+
+/* кнопка проседает при нажатии */
+.btn:active, .mark:active, .c-btn:active, .c-mark:active, .role:active{
+  transform:translateY(1px) scale(.995);
+}
+.btn, .mark, .c-btn, .c-mark, .role, .pcard, .name-list button{
+  transition:background .14s ease, border-color .14s ease, color .14s ease,
+             transform .08s ease, box-shadow .18s ease;
+}
+
+/* карточка чуть приподнимается под курсором */
+.pcard:hover{ box-shadow:0 4px 14px rgba(22,35,61,.09); transform:translateY(-2px); }
+
+/* подсветка карточки, которую только что изменили */
+@keyframes flashRing{
+  0%   { box-shadow:0 0 0 0 rgba(37,99,235,.55); }
+  35%  { box-shadow:0 0 0 7px rgba(37,99,235,.16); }
+  100% { box-shadow:0 0 0 0 rgba(37,99,235,0); }
+}
+.pcard.flash{ animation:flashRing 1.05s ease-out; }
+
+/* строка подтверждения внизу экрана */
+.toasts{ position:fixed; left:0; right:0; bottom:22px; z-index:300;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  pointer-events:none; padding:0 16px; }
+.toast{ background:var(--navy); color:#fff; font-size:15px; font-weight:500;
+  padding:13px 22px; border-radius:12px; box-shadow:0 6px 26px rgba(4,0,87,.28);
+  opacity:0; transform:translateY(12px); transition:opacity .22s ease, transform .22s ease;
+  max-width:min(560px, 92vw); text-align:center; line-height:1.4; }
+.toast.in{ opacity:1; transform:translateY(0); }
+
+@media(prefers-reduced-motion:reduce){
+  .pcard.flash{ animation:none; }
+  .btn, .mark, .c-btn, .c-mark, .role, .pcard, .name-list button, .toast{ transition:none; }
+  .pcard:hover{ transform:none; }
+}
