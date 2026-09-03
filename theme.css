@@ -523,10 +523,18 @@ table.list td{ border-bottom:1px solid var(--rule) !important; }
 
   .section-head h2{ font-size:26px !important; }
   .login-brand{ font-size:26px !important; }
+
+  /* Полоска демо-режима на телефоне: мельче и плотнее, иначе занимает
+     три строки и съедает верх экрана. */
+  .demo-flag{ font-size:12px !important; padding:6px 12px !important;
+    line-height:1.35 !important; }
+  .reset-demo{ font-size:12px !important; margin-left:4px; }
 }
 
 /* очень узкие телефоны */
 @media(max-width:430px){
+  .demo-flag{ font-size:10px !important; padding:5px 10px !important; }
+  .reset-demo{ font-size:10px !important; }
   .lesson .comp-grid{ grid-template-columns:1fr !important; }
   .lesson .proj-stats{ grid-template-columns:1fr !important; }
   .lesson .proj-stat{ border-right:0 !important; padding:8px 0 !important;

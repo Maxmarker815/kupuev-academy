@@ -181,7 +181,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1788429419">
+<link rel="stylesheet" href="theme.css?v=1788453650">
 </head>
 <body>
 
@@ -803,10 +803,13 @@ function viewTeacher(){
     // Ученик застрял на конкретном проекте — преподавателю нужен именно он,
     // а не начало инструкции: листать оглавление при ученике неудобно.
     const bg = $(`<a class="btn ghost sm" target="_blank" href="${CONFIG.GUIDE_URL}#proj-${p.n}">Урок</a>`);
-    const b1 = $(`<button class="btn sm">Разобрались</button>`);
+    // «Проект работает» ставит проект в собранные, «Помог, доделает» только снимает
+    // отметку «застрял». Названия должны говорить, что произойдёт: преподаватель
+    // выбирает между ними на ходу, стоя у стола ученика.
+    const b1 = $(`<button class="btn sm">Проект работает</button>`);
     b1.onclick = async () => {
       await Store.setProgress(s.id, p.n, 'done', '');
-      toast(s.name + ' — проект ' + String(p.n).padStart(2,'0') + ' закрыт');
+      toast(s.name + ' — проект ' + String(p.n).padStart(2,'0') + ' отмечен собранным');
       render();
     };
     const b2 = $(`<button class="btn ghost sm">Помог, доделает</button>`);
