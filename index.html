@@ -1058,5 +1058,19 @@ function confirmish(msg){ return window.confirm(msg); }
   render();
 })();
 </script>
+<script>
+/* Защита от копирования — как в инструкции. Поля ввода не трогаем:
+   преподавателю нужно копировать код группы, ученику — вводить его. */
+document.addEventListener('copy', function(e) {
+  var t = e.target;
+  if (t && t.closest && t.closest('input, textarea, [contenteditable="true"]')) return;
+  e.preventDefault();
+}, false);
+document.addEventListener('contextmenu', function(e) {
+  var t = e.target;
+  if (t && t.closest && t.closest('input, textarea, [contenteditable="true"]')) return;
+  e.preventDefault(); return false;
+}, false);
+</script>
 </body>
 </html>
