@@ -6,12 +6,12 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>KUPUEV ACADEMY — Курс робототехники</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23040057%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2246%22%20font-family%3D%22Georgia%2C%27Times%20New%20Roman%27%2Cserif%22%20font-size%3D%2242%22%20font-weight%3D%22400%22%20fill%3D%22%23ffffff%22%20text-anchor%3D%22middle%22%3EK%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="icon" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="guide/styles.css">
-<link rel="stylesheet" href="theme.css?v=1788710298">
+<link rel="stylesheet" href="theme.css?v=1788728552">
 <style>
 /* =====================================================================
    Курс = уроки внутри платформы. Текст уроков взят из печатной книги
@@ -30,7 +30,7 @@ body.course .runner,body.course .folio{display:none}
 body.course .toc-rail,body.course .progress-rail{display:none!important}
 
 /* ---------- шапка ---------- */
-:root{ --top-h:84px }
+:root{ --top-h:108px }
 .c-top{position:sticky;top:0;z-index:60;background:#040057;border-bottom:1px solid rgba(255,255,255,.10)}
 .c-top-in{display:flex;align-items:center;gap:18px;padding:0 30px;min-height:var(--top-h)}
 .c-brand{font-family:var(--serif);font-size:31px;line-height:1;letter-spacing:.03em}
@@ -56,7 +56,7 @@ body.course .toc-rail,body.course .progress-rail{display:none!important}
 .c-t{flex:1}
 .c-ok{flex:0 0 16px;text-align:right;font-size:13.5px;color:var(--green);font-weight:700}
 @media(min-width:1400px){ .c-rail{flex:0 0 340px} .c-item{font-size:15px;padding:11px 24px}
-  .c-brand{font-size:37px} .c-brand small{font-size:12px} :root{--top-h:90px} }
+  .c-brand{font-size:37px} .c-brand small{font-size:12px} :root{--top-h:118px} }
 @media(min-width:1700px){ .c-rail{flex:0 0 350px} .c-item{font-size:17px} }
 
 .c-main{flex:1;min-width:0;padding:30px 40px 100px;max-width:1180px;margin:0 auto}
@@ -92,7 +92,7 @@ body.course .toc-rail,body.course .progress-rail{display:none!important}
 .c-mark.on .box{background:#04170F;border-color:#04170F;color:var(--green);font-weight:700}
 .c-mark[disabled]{opacity:.42;cursor:default}
 .c-mark[disabled]:hover{border-color:var(--rule-strong);color:var(--ink-2)}
-.c-hint{font-size:13.5px;color:var(--ink-3)}
+.c-hint{font-size:12px;color:var(--ink-3)}
 
 @media(max-width:900px){
   .c-burger{display:inline-block}
@@ -110,7 +110,7 @@ body.course .toc-rail,body.course .progress-rail{display:none!important}
 <a class="skiplink" href="#main">Перейти к уроку</a>
 <div class="c-top"><div class="c-top-in">
   <button class="c-btn c-burger" id="burger">☰</button>
-  <div class="c-brand">KUPUEV ACADEMY<small>Курс робототехники</small></div>
+  <a class="c-brand" href="index.html" title="KUPUEV ACADEMY"><img class="lg-wide" src="logo.svg" alt="KUPUEV ACADEMY"><img class="lg-mark" src="logo-block.svg" alt=""></a>
   <div class="c-sp"></div>
   <a class="c-btn" href="index.html">← Мои проекты</a>
 </div></div>
@@ -1508,11 +1508,6 @@ document.addEventListener('contextmenu', function(e) { e.preventDefault(); retur
     for (var i=1;i<=17;i++) if (status(i) !== 'done') return i;
     return null;
   }
-  function lastDone(){
-    var L = 0;
-    for (var i=1;i<=17;i++) if (status(i) === 'done') L = i;
-    return L;
-  }
   /* Короткое подтверждение внизу экрана — те же стили, что в кабинетах. */
   function ctoast(text){
     var box = document.getElementById('toasts');
@@ -1522,6 +1517,14 @@ document.addEventListener('contextmenu', function(e) { e.preventDefault(); retur
     box.appendChild(t);
     requestAnimationFrame(function(){ t.classList.add('in'); });
     setTimeout(function(){ t.classList.remove('in'); setTimeout(function(){ t.remove(); }, 260); }, 2800);
+  }
+
+  /* Сколько проектов ученик уже отметил. Нужно, чтобы подсказка про «вживую»
+     показывалась только новичку и исчезала после первой отметки. */
+  function doneCount(){
+    var c = 0;
+    for (var i = 1; i <= 17; i++) if (status(i) === 'done') c++;
+    return c;
   }
 
   function noteOf(n){ var r = db && db.progress ? db.progress[me+':'+n] : null; return r ? (r.note||'') : ''; }
@@ -1586,13 +1589,13 @@ document.addEventListener('contextmenu', function(e) { e.preventDefault(); retur
     var n = foot.dataset.proj ? +foot.dataset.proj : null;
 
     if (n && isStudent){
+      // Порядок свободный: отметить можно любой проект, а не только следующий
+      // по очереди. Кто-то приходит уже умея и начинает со сложного.
       var done = status(n) === 'done';
-      var can  = done ? (n === lastDone()) : (n === firstOpen());
       var b = document.createElement('button');
       b.className = 'c-mark' + (done ? ' on' : '');
       b.innerHTML = '<span class="box">' + (done ? '✓' : '') + '</span>' +
                     (done ? 'Собрал' : 'Собрал — отметить');
-      if (!can) b.disabled = true;
       b.onclick = function(){
         setDone(n, !done);
         paintRail(); paintFoot(art);
@@ -1608,15 +1611,18 @@ document.addEventListener('contextmenu', function(e) { e.preventDefault(); retur
       sb.onclick = function(){ askStuck(n, art); };
       foot.appendChild(sb);
 
-      var hint = document.createElement('span');
-      hint.className = 'c-hint';
-      hint.textContent = stuck
-        ? 'Ты написал, что не получается. Преподаватель это видит.'
-        : (can
-            ? (done ? 'Отмечено. Преподаватель это видит.' : 'Нажми, когда проект заработает вживую.')
-            : (done ? 'Снять отметку можно только с последнего собранного проекта.'
-                    : 'Проекты идут по порядку — сначала собери предыдущий.'));
-      foot.appendChild(hint);
+      // Когда проект отмечен, подсказка не нужна: зелёная кнопка с галочкой
+      // и так всё говорит. Текст рядом с ней только шумел.
+      // Правило «отмечай, когда заработало вживую» важно узнать один раз.
+      // Дальше подсказка только шумела бы на каждом из семнадцати уроков.
+      var hintText = stuck ? 'Ты написал, что не получается. Преподаватель это видит.'
+                   : ((!done && doneCount() === 0) ? 'Отмечай, когда заработает вживую' : '');
+      if (hintText){
+        var hint = document.createElement('span');
+        hint.className = 'c-hint';
+        hint.textContent = hintText;
+        foot.appendChild(hint);
+      }
     } else if (n){
       var s = document.createElement('span');
       s.className = 'c-hint';

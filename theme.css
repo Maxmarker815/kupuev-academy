@@ -117,7 +117,7 @@ table.list td, table.list th, table.mx td, table.mx th{ font-variant-numeric:tab
 .topbar .brand{ font-size:31px !important; }
 /* Шапка выровнена с содержимым страницы: у .wrap отступ 20px, значит и здесь 20,
    иначе название школы стоит на 10 пикселей правее слова «Группа» под ним. */
-.topbar-in{ padding:0 20px !important; min-height:84px !important; max-width:1560px !important; }
+.topbar-in{ padding:0 20px !important; min-height:108px !important; max-width:1560px !important; }
 
 /* Рабочая область шире — на широком мониторе не оставалось половины экрана
    пустой. Карточки проектов крупнее, а не просто расставлены гуще. */
@@ -130,7 +130,7 @@ table.list td, table.list th, table.mx td, table.mx th{ font-variant-numeric:tab
 .pcard .acts .btn{ font-size:13.5px !important; padding:7px 13px !important; }
 .hero{ padding:30px 32px !important; }
 .hero .big{ font-size:64px !important; }
-@media(min-width:1400px){ .topbar-in{ min-height:90px !important; } }
+@media(min-width:1400px){ .topbar-in{ min-height:118px !important; } }
 @media(min-width:1400px){ .topbar .brand{ font-size:37px !important; } }
 .topbar .who{ color:#A6ADDE !important; }
 .topbar .who b{ color:#FFFFFF !important; }
@@ -145,9 +145,19 @@ table.list td, table.list th, table.mx td, table.mx th{ font-variant-numeric:tab
 .c-item.on .c-n{ color:#A9BCFF !important; }
 .c-ok{ color:#5FD6A4 !important; }
 .c-rail-h{ color:#9098D0 !important; }
-.c-btn{ background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.18) !important;
-        color:#F4F7FC !important; }
-.c-btn:hover{ background:rgba(255,255,255,.16) !important; border-color:rgba(255,255,255,.34) !important; }
+/* Светлая кнопка — та, что на белом фоне: внизу урока «Не получается»,
+   «Назад», «Дальше». Раньше правило ниже действовало на все кнопки сразу,
+   и на светлом они были белым по белому. */
+.c-btn{ background:#FFFFFF !important; border:1px solid var(--rule-strong) !important;
+        color:var(--ink) !important; box-shadow:var(--shadow-sm); }
+.c-btn:hover{ background:var(--navy) !important; border-color:var(--navy) !important;
+        color:#FFFFFF !important; }
+/* В синей шапке — наоборот, прозрачная со светлым текстом */
+.c-top .c-btn{ background:rgba(255,255,255,.08) !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+        color:#F4F7FC !important; box-shadow:none; }
+.c-top .c-btn:hover{ background:rgba(255,255,255,.16) !important;
+        border-color:rgba(255,255,255,.34) !important; color:#FFFFFF !important; }
 .topbar .btn{ background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.18) !important;
               color:#F4F7FC !important; }
 .topbar .btn:hover{ background:rgba(255,255,255,.16) !important; }
@@ -498,7 +508,9 @@ table.list td{ border-bottom:1px solid var(--rule) !important; }
   .lesson .parts-thumbs, .lesson .parts-thumbs-full{ flex-wrap:wrap !important; }
 
   /* ---- кабинеты ---- */
-  .topbar-in{ min-height:64px !important; padding:10px 16px !important; }
+  /* 64px было рассчитано на текстовое название. Полный знак со слоганом
+     выше — в диапазоне 761–820px он упирался в края шапки. */
+  .topbar-in{ min-height:100px !important; padding:12px 16px !important; }
   .topbar .brand{ font-size:22px !important; }
   .topbar .who{ font-size:12px !important; }
   .topbar .who b{ font-size:13.5px !important; }
@@ -658,4 +670,208 @@ table .empty{ padding:28px 16px !important; }
   .c-modal{ padding:20px; }
   .c-modal h3{ font-size:22px; }
   .c-modal-acts .c-btn{ flex:1; }
+}
+
+
+/* Карточка проекта целиком открывает урок — отдельная кнопка «Урок» убрана.
+   Курсор и подъём при наведении показывают, что по ней можно нажать. */
+.pcard.clickable{ cursor:pointer; }
+.pcard.clickable:hover h3{ color:var(--navy); }
+.pcard.clickable:focus-visible{ outline:3px solid #7FB6FF; outline-offset:3px; }
+/* Кнопки внутри карточки живут своей жизнью и урок не открывают */
+.pcard .acts .btn, .pcard .mark{ cursor:pointer; }
+
+
+/* Строка-разделитель группы в таблице «Все ученики по проектам».
+   Прижата к левому краю и не липнет при прокрутке — это заголовок, а не имя. */
+table.mx tbody tr.mx-grp th{ position:static !important; text-align:left !important;
+  background:var(--paper-3) !important; color:var(--ink) !important;
+  font-size:16px !important; font-weight:600 !important;
+  padding:12px 15px !important; border-right:0 !important;
+  border-top:1px solid var(--rule-strong) !important; }
+table.mx tbody tr.mx-grp th .s{ font-weight:500; font-size:13.5px; color:var(--ink-3); }
+@media(max-width:820px){
+  table.mx tbody tr.mx-grp th{ font-size:14px !important; padding:10px 12px !important; }
+  table.mx tbody tr.mx-grp th .s{ display:block; margin-top:3px; }
+}
+
+
+/* =====================================================================
+   ПАНЕЛЬ ДИРЕКТОРА: темп, воронка, списки «требуют внимания»
+   Один цвет на все столбики — сравнивается высота, а не оттенок.
+   Текущая неделя выделена насыщенностью, не другим цветом.
+   ===================================================================== */
+.cardh{ font-size:19px !important; font-weight:600 !important; color:var(--ink) !important;
+  letter-spacing:-.015em !important; margin:0 0 14px !important; }
+
+.spark{ display:flex; align-items:flex-end; gap:10px; height:104px; margin-top:22px; }
+.spark .col{ flex:1; display:flex; align-items:flex-end; height:100%; }
+.spark .col i{ display:block; width:100%; min-height:4px;
+  background:var(--navy); opacity:.32; border-radius:3px 3px 0 0;
+  transition:opacity .15s ease; }
+.spark .col.now i{ opacity:1; }
+.spark .col:hover i{ opacity:.62; }
+.spark .col.now:hover i{ opacity:1; }
+.spark-x{ display:flex; gap:10px; margin-top:9px; }
+.spark-x span{ flex:1; text-align:center; font-size:12px; color:var(--ink-3); }
+.spark-x span:last-child{ color:var(--ink); font-weight:600; }
+
+.funnel .fr + .fr{ margin-top:20px; }
+.funnel .fh{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:8px; }
+.funnel .ft{ font-size:15px; font-weight:600; color:var(--ink); }
+.funnel .fv{ font-size:22px; font-weight:600; color:var(--ink); letter-spacing:-.02em; }
+.funnel .fv small{ font-size:13.5px; font-weight:400; color:var(--ink-3); }
+.funnel .fs{ font-size:13.5px; color:var(--ink-3); margin-top:7px; }
+
+/* Таблица внутри карточки: на телефоне прокручивается сама,
+   вместо того чтобы растягивать всю страницу вбок. */
+.tscroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.tscroll table.list{ min-width:100%; }
+.tscroll{ min-width:0; }
+
+/* На телефоне таблица шире экрана растягивала всю страницу вбок: колонку
+   грида надо явно разрешить сжимать (min-width:0), иначе она раздувается
+   до ширины содержимого. Сама таблица после этого прокручивается внутри
+   карточки, а страница остаётся ровно по ширине экрана. */
+@media(max-width:760px){
+  .two > *{ min-width:0; }
+  .card{ overflow-x:auto; }
+}
+
+/* На телефоне в списке «застряли» важно, кто и сколько дней ждёт.
+   Фраза ученика и название проекта туда не помещаются — их видно
+   на компьютере, а на узком экране колонки схлопываются до сути. */
+@media(max-width:760px){
+  .qn{ display:none !important; }
+  .pt{ display:none !important; }
+}
+@media(max-width:760px){
+  .tscroll table.list th, .tscroll table.list td{ padding-left:8px !important; padding-right:8px !important; }
+  .tscroll .chip{ padding:4px 7px !important; letter-spacing:.03em !important; }
+}
+
+
+/* =====================================================================
+   ЛОГОТИП ШКОЛЫ
+   Директор прислала официальный логотип. Он переведён в вектор
+   (logo.svg — белый для синих панелей, logo-blue.svg — для светлого
+   экрана входа), поэтому остаётся чётким на любом размере и не
+   зависит от того, установлен ли у человека нужный шрифт.
+   Раньше на этом месте стояло название школы антиквой — теперь настоящий знак.
+   ===================================================================== */
+.topbar .brand, .c-brand{ display:flex !important; align-items:center !important;
+  text-decoration:none !important; border-bottom:0 !important; flex:0 0 auto !important; }
+/* Компоновка: здание, под ним KUPUEV / ACADEMY, справа через разделитель —
+   слоган в две строки. Слоган разбит на две строки не для красоты: одной
+   строкой он вдвое длиннее и при той же ширине буквы вдвое мельче. */
+.topbar .brand img, .c-brand img{ display:block; height:76px; width:auto; }
+.login-brand img{ display:block; height:80px; width:auto; }
+@media(min-width:1400px){
+  .topbar .brand img, .c-brand img{ height:84px; }
+  .login-brand img{ height:88px; }
+}
+/* Ниже 760px слоган не помещается в строку рядом с названием. Остаётся
+   компактный блок «здание + KUPUEV ACADEMY» — он узкий и всё ещё называет школу. */
+.lg-mark{ display:none !important; }
+@media(max-width:760px){
+  .lg-wide{ display:none !important; }
+  .lg-mark{ display:block !important; }
+  .topbar .brand img, .c-brand img{ height:46px; }
+  .login-brand img{ height:48px; }
+}
+
+/* Ниже 760px в шапке только знак 36px — там компактная высота снова уместна. */
+@media(max-width:760px){
+  .topbar-in{ min-height:70px !important; padding:10px 16px !important; }
+}
+
+
+/* =====================================================================
+   ЧИТАЕМОСТЬ УРОКА
+
+   Главное, что нужно знать, прежде чем трогать кегли в уроке:
+   страница урока — это вёрстка печатной книги в миллиметрах, и она
+   увеличена целиком через `zoom` (см. шаблон-курса.html). Поэтому
+   в стилях у абзаца написано 12,4px, а на экране он выглядит как 17px.
+   Менять размер шрифта по отдельности нельзя — развалится вся
+   внутренняя иерархия книги. Размер регулируется одним zoom.
+
+   Замер до правки на экране 1440: текст 17px в строке на 1020px —
+   это 165 символов. Норма для чтения 60–75: глаз, дойдя до конца
+   строки, не находит начало следующей. Отсюда и ощущение «шрифт
+   крупный» — крупным кажется не буква, а вся масса текста.
+   ===================================================================== */
+
+/* --- размер: одним zoom, а не по каждому элементу --- */
+.lesson{ zoom:1.22 !important; }
+@media(min-width:1400px){ .lesson{ zoom:1.25 !important; } }
+@media(min-width:1700px){ .lesson{ zoom:1.30 !important; } }
+/* На телефоне книга шла вообще без увеличения — 12px, слишком мелко. */
+@media(max-width:820px){ .lesson{ zoom:1.2 !important; } }
+
+/* --- мера строки ---
+   450px в стилях при zoom 1,25 дают на экране 560px и около 72 символов.
+   Единицу ch не используем: она считается по ширине нуля в текущем шрифте,
+   и пока Inter не загрузился, ширина уезжает в полтора раза. */
+.lesson .pages > p,
+.lesson .pages > ul,
+.lesson .pages > ol,
+.lesson .pages > .callout,
+.lesson .proj-body > div > p,
+.lesson .proj-body > div > ul,
+.lesson .proj-body > div > .callout,
+.lesson .proj-side p{ max-width:450px !important; }
+.lesson .proj-lede{ max-width:560px !important; }
+
+/* Две колонки под шапкой были 189 + 524: в узкой умещалось 40 символов,
+   слова рвались через одно. Выравниваем ближе к равным. */
+@media(min-width:821px){
+  .lesson .proj-body{ grid-template-columns:minmax(240px,.9fr) 1.1fr !important;
+                      gap:38px !important; }
+}
+
+/* Подзаголовок был всего на четверть крупнее текста — раздел не читался
+   как раздел. Разводим по размеру и даём воздух сверху. */
+.lesson h3.h-sub{ font-size:19px !important; line-height:1.35 !important;
+  margin-top:30px !important; margin-bottom:10px !important; }
+
+/* --- левое меню: это список для выбора, а не текст для чтения --- */
+.c-item{ font-size:13.5px !important; padding:9px 22px !important; }
+.c-item .c-n{ font-size:11px !important; }
+@media(min-width:1400px){ .c-item{ font-size:14px !important; padding:9px 24px !important; } }
+@media(min-width:1700px){ .c-item{ font-size:14px !important; } }
+
+/* На телефоне книжные двухколоночные блоки не схлопывались: при zoom 1
+   они кое-как влезали, при 1.2 стали распирать страницу вбок. */
+@media(max-width:820px){
+  .lesson .grid-2, .lesson .grid-3, .lesson .proj-body{
+    grid-template-columns:1fr !important; }
+  .lesson .grid-2 > *, .lesson .grid-3 > *{ min-width:0 !important; }
+  /* «Идеи для развития» шли в ряд — на телефоне ряд шире экрана */
+  .lesson .ideas{ display:block !important; }
+  .lesson .idea{ width:auto !important; max-width:100% !important; margin-bottom:8px;
+                 flex-wrap:wrap !important; }
+  /* Длинные имена команд не переносятся сами и распирают строку */
+  .lesson code, .lesson .mono{ overflow-wrap:anywhere !important; word-break:break-word !important; }
+  /* Текст внутри плашки — гибкий элемент: без min-width:0 он не сжимается
+     меньше своего содержимого и выпирает за экран. */
+  .lesson .callout > *{ min-width:0 !important; max-width:100% !important; }
+  /* Заголовок раздела вёрстан под А4 и не помещался в ширину телефона */
+  .lesson .section-opener h2.title, .lesson h2.title{
+    font-size:28px !important; line-height:1.15 !important;
+    overflow-wrap:break-word !important; }
+  /* Колонки блока «чему научишься / что увидишь» не сжимались до ширины экрана */
+  .lesson .proj-body > *{ min-width:0 !important; max-width:100% !important; }
+  /* Длинные подписи в списках деталей и ссылок */
+  .lesson .parts-list span, .lesson .q, .lesson .parts-list li,
+  .lesson .parts-list a, .lesson .q *{
+    overflow-wrap:anywhere !important; word-break:break-word !important;
+    white-space:normal !important; max-width:100% !important; }
+  /* Таблицы распиновки шире экрана — пусть прокручиваются сами */
+  .lesson table, .lesson table.pinout{ display:block !important;
+    overflow-x:auto !important; max-width:100% !important; width:auto !important; }
+  /* В книге многое выложено рядами: миниатюры деталей, ссылки, значки.
+     На листе А4 ряд помещался, на телефоне — нет. Разрешаем переносить.
+     Для не-флексовых элементов правило ничего не делает. */
+  .lesson .pages div, .lesson .pages li, .lesson .pages ul{ flex-wrap:wrap !important; }
 }

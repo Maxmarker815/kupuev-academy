@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>Платформа KUPUEV ACADEMY</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23040057%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2246%22%20font-family%3D%22Georgia%2C%27Times%20New%20Roman%27%2Cserif%22%20font-size%3D%2242%22%20font-weight%3D%22400%22%20fill%3D%22%23ffffff%22%20text-anchor%3D%22middle%22%3EK%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="icon" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -181,7 +181,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1788710298">
+<link rel="stylesheet" href="theme.css?v=1788728552">
 </head>
 <body>
 
@@ -320,6 +320,31 @@ const Store = {
   // Никто ничего не нажимает специально: платформа считает это сама.
   firstOpen(sid){ for(const p of PROJECTS) if(this.prog(sid,p.n).status !== 'done') return p.n; return null; },
 
+  // --- время: сколько дней прошло, когда была последняя активность ---
+  daysSince(iso){
+    if (!iso) return null;
+    return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  },
+  lastTouch(sid){
+    let last = null;
+    for (const p of PROJECTS){
+      const r = this.prog(sid, p.n);
+      if (r.updated && (!last || r.updated > last)) last = r.updated;
+    }
+    return last;
+  },
+  // сколько проектов закрыто за период: от daysFrom дней назад до daysTo
+  doneBetween(daysFrom, daysTo){
+    let c = 0;
+    for (const key in this.db.progress){
+      const r = this.db.progress[key];
+      if (r.status !== 'done' || !r.updated) continue;
+      const d = this.daysSince(r.updated);
+      if (d !== null && d >= daysTo && d < daysFrom) c++;
+    }
+    return c;
+  },
+
   // Состояние карточки: собрано / застрял / делает сейчас / ещё не дошёл
   state(sid, n){
     const st = this.prog(sid, n).status;
@@ -371,11 +396,14 @@ function seedDemo(){
 
   // Прогресс идёт строго по порядку, без «дырок»: сначала собранные подряд,
   // затем один текущий проект, всё остальное — ещё не начато.
-  // Группа 7А ушла дальше всех, 5Б только начала.
+  // 9В (старшие) ушли дальше всех, 5Б набрали недавно и только начали.
   const progress = {};
-  const reach = {'ROBO-7A':[5,9], 'ROBO-5B':[1,4], 'ROBO-9V':[7,13]};
-  const now = new Date().toISOString();
+  const reach   = {'ROBO-7A':[5,9],  'ROBO-5B':[1,4],  'ROBO-9V':[10,17]};
+  // сколько дней назад группа начала заниматься — от этого зависит,
+  // растянуты её отметки на все шесть недель графика или только на последние
+  const opened  = {'ROBO-7A':63, 'ROBO-5B':26, 'ROBO-9V':72};
   const counters = {};
+  const ago = (days) => new Date(Date.now() - days * 86400000).toISOString();
 
   students.forEach(st => {
     const i = counters[st.groupCode] = (counters[st.groupCode] || 0);
@@ -383,12 +411,28 @@ function seedDemo(){
     const [lo,hi] = reach[st.groupCode];
     const done = lo + (i % (hi - lo + 1));           // сколько проектов собрано подряд
 
-    for (let p = 1; p <= done; p++) progress[st.id+':'+p] = {status:'done', note:'', updated:now};
+    // Даты разложены по прошедшим неделям, иначе блоки про темп и «не двигаются»
+    // показывали бы пустоту: у всех отметок была бы одна дата — сегодняшняя.
+    // Отметки ученика растянуты на весь срок жизни группы, а не сжаты к сегодня,
+    // иначе график темпа превращается в ровно растущую лесенку — так не бывает.
+    const stale   = (i % 7 === 3);                   // этот давно не заходил
+    const lastGap = stale ? 15 + (i % 6) : (i % 5);  // дней с последней отметки
+    const span    = opened[st.groupCode] - lastGap;  // на сколько дней растянут его путь
+    const step    = Math.max(2, Math.round(span / (done + 1)));
+
+    for (let p = 1; p <= done; p++){
+      // лёгкий разброс, чтобы отметки не ложились строго по сетке
+      const jitter = ((i + p) % 3) - 1;
+      progress[st.id+':'+p] = {status:'done', note:'', updated: ago(lastGap + (done - p) * step + jitter)};
+    }
 
     // Каждый четвёртый ученик застрял на следующем проекте и написал об этом.
-    // Остальным ничего не пишем: «делает сейчас» платформа вычислит сама.
+    // Часть из них — давно, и к ним никто не подошёл: это важный сигнал директору.
     const next = done + 1;
-    if (next <= NPROJ && i % 4 === 1) progress[st.id+':'+next] = {status:'stuck', note:stuckNotes[next]||'', updated:now};
+    if (next <= NPROJ && i % 4 === 1){
+      const stuckDays = (i % 8 === 1) ? 8 + (i % 5) : 1 + (i % 3);
+      progress[st.id+':'+next] = {status:'stuck', note:stuckNotes[next]||'', updated: ago(stuckDays)};
+    }
   });
 
   return {school:{name:CONFIG.SCHOOL_NAME, adminPin:'0000'}, teachers, groups, students, progress};
@@ -402,6 +446,22 @@ let S = {screen:'login', role:null, teacherId:null, studentId:null, groupCode:nu
 // <template> нужен, чтобы браузер правильно разбирал строки таблиц (<tr>, <td>)
 const $ = (h) => { const t=document.createElement('template'); t.innerHTML=h.trim(); return t.content.firstElementChild; };
 const esc = (s) => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// В узкой колонке полное название группы («Робототехника · 7А · вт/чт 16:00»)
+// переносится на две строки и мешает читать. Берём из него только сам класс.
+const gShort = (g) => {
+  if (!g) return '—';
+  const parts = String(g.name).split('·').map(s => s.trim()).filter(Boolean);
+  return parts.length > 1 ? parts[1] : parts[0];
+};
+
+// «1 день / 2 дня / 5 дней» — иначе в отчёте будет «5 день»
+const plural = (n, one, few, many) => {
+  const a = Math.abs(n) % 100, b = a % 10;
+  if (a > 10 && a < 20) return many;
+  if (b > 1 && b < 5)   return few;
+  if (b === 1)          return one;
+  return many;
+};
 const stars = (n) => '★'.repeat(n) + '☆'.repeat(4-n);
 
 function save(){ try{ localStorage.setItem('robo_session', JSON.stringify({role:S.role, teacherId:S.teacherId, studentId:S.studentId, groupCode:S.groupCode})); }catch(e){} }
@@ -488,7 +548,7 @@ function topbar(){
             : S.role==='teacher' ? Store.teacher(S.teacherId) : {name:'Администратор'};
   const roleLabel = {student:'Ученик', teacher:'Преподаватель', admin:'Администратор'}[S.role];
   const bar = $(`<div class="topbar"><div class="topbar-in">
-    <div class="brand">${esc(Store.db.school.name)}<small>Платформа обучения Arduino</small></div>
+    <div class="brand" title="${esc(Store.db.school.name)}"><img class="lg-wide" src="logo.svg" alt="${esc(Store.db.school.name)}"><img class="lg-mark" src="logo-block.svg" alt=""></div>
     <div class="spacer"></div>
     <div class="who">${roleLabel}<b>${esc(who ? who.name : '')}</b></div>
     <button class="btn ghost sm" id="lo">Выйти</button>
@@ -503,7 +563,7 @@ function viewLogin(){
 
   // Название школы на входе: до входа шапки ещё нет, а человек должен сразу
   // видеть, куда он попал.
-  el.appendChild($(`<div class="login-brand">${esc(Store.db.school.name)}</div>`));
+  el.appendChild($(`<div class="login-brand"><img class="lg-wide" src="logo-blue.svg" alt="${esc(Store.db.school.name)}"><img class="lg-mark" src="logo-block-blue.svg" alt=""></div>`));
 
   if (!S.role){
     el.appendChild($(`<h1>Кто ты?</h1>`));
@@ -594,9 +654,10 @@ function viewStudent(){
   const pct = Math.round(done / NPROJ * 100);
   // Прогресс идёт строго по порядку. Отметить можно только текущий проект,
   // снять отметку — только с последнего собранного. Так в прогрессе не появится дырок.
+  // «Следующий по программе» — первый несобранный. При свободном порядке это
+  // остаётся правдой: платформа не утверждает, чем ученик занят прямо сейчас,
+  // а показывает, куда идти дальше по курсу.
   const openNow = Store.firstOpen(me.id);
-  let lastDone = 0;
-  PROJECTS.forEach(x => { if (Store.prog(me.id, x.n).status === 'done') lastDone = x.n; });
   const cur = PROJECTS.find(p => p.n === openNow) || null;
 
   const el = document.createDocumentFragment();
@@ -604,7 +665,7 @@ function viewStudent(){
     <div class="big">${done}<small> / ${NPROJ}</small><div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-top:8px">проектов собрано</div></div>
     <div class="grow">
       <div style="font-family:var(--serif);font-size:26px;margin-bottom:4px">${pct < 15 ? 'Только начинаем' : pct < 50 ? 'Хорошо идёшь' : pct < 100 ? 'Больше половины позади' : 'Весь курс пройден!'}</div>
-      <p class="muted" style="font-size:13.5px">${cur ? 'Сейчас у тебя <b style="color:var(--ink)">Проект ' + String(cur.n).padStart(2,'0') + ' · ' + esc(cur.t) + '</b>' : 'Все проекты закрыты. Красиво.'}</p>
+      <p class="muted" style="font-size:13.5px">${cur ? 'Следующий по программе — <b style="color:var(--ink)">Проект ' + String(cur.n).padStart(2,'0') + ' · ' + esc(cur.t) + '</b>' : 'Все проекты закрыты. Красиво.'}</p>
       <div class="bar" style="margin-top:12px"><i style="width:${pct}%"></i></div>
     </div>
   </div>`);
@@ -646,28 +707,28 @@ function viewStudent(){
       <div class="num">${String(p.n).padStart(2,'0')} · ${stars(p.s)} · ${p.m} мин</div>
       <h3>${esc(p.t)}</h3>
       ${st==='stuck' ? `<div><span class="chip stuck">Застрял</span></div>` : ''}
-      ${st==='doing' ? `<div><span class="chip doing">Сейчас делаешь</span></div>` : ''}
+      ${st==='doing' ? `<div><span class="chip doing">Следующий</span></div>` : ''}
       ${st==='stuck' && pr.note ? `<div class="note">${esc(pr.note)}</div>` : ''}
     </div>`);
 
-    // Две обычные кнопки — открыть инструкцию и позвать преподавателя.
+    // Урок открывается нажатием на саму карточку — отдельная кнопка не нужна.
+    // Остаётся только «Не получается».
     const acts = $(`<div class="acts"></div>`);
-    acts.appendChild($(`<a class="btn ghost tiny" href="${CONFIG.GUIDE_URL}#proj-${p.n}">Урок</a>`));
     const help = $(`<button class="btn ghost tiny">${st==='stuck' ? 'Изменить' : 'Не получается'}</button>`);
-    help.onclick = () => askStuck(me.id, p);
+    help.onclick = (e) => { e.stopPropagation(); askStuck(me.id, p); };
     acts.appendChild(help);
     c.appendChild(acts);
 
     // Кнопка-переключатель внизу: она же показывает состояние, она же его меняет.
-    const canToggle = isDone ? (p.n === lastDone) : (p.n === openNow);
-    const hint = canToggle
-      ? (isDone ? 'Нажми, если отметил по ошибке' : 'Нажми, когда проект заработает')
-      : (isDone ? 'Снять отметку можно только с последнего собранного проекта'
-                : 'Проекты идут по порядку — сначала собери предыдущий');
-    const mark = $(`<button class="mark ${isDone?'on':''}" ${canToggle?'':'disabled'} title="${hint}">
+    // Порядок свободный: ученик может начать с любого проекта. Кто-то приходит
+    // уже умея, и заставлять его собирать мигающий светодиод ради очереди — значит
+    // потерять его на первом занятии.
+    const hint = isDone ? 'Нажми, если отметил по ошибке' : 'Нажми, когда проект заработает';
+    const mark = $(`<button class="mark ${isDone?'on':''}" title="${hint}">
       <span class="box">${isDone?'✓':''}</span>Собрал
     </button>`);
-    if (canToggle) mark.onclick = async () => {
+    mark.onclick = async (e) => {
+      e.stopPropagation();
       await Store.setProgress(me.id, p.n, isDone ? 'todo' : 'done', '');
       S.flash = p.n;
       if (!isDone){
@@ -680,6 +741,17 @@ function viewStudent(){
       render();
     };
     c.appendChild(mark);
+
+    // Карточка целиком открывает урок: и мышью, и с клавиатуры (Enter или пробел).
+    const openLesson = () => { location.href = CONFIG.GUIDE_URL + '#proj-' + p.n; };
+    c.classList.add('clickable');
+    c.setAttribute('role', 'link');
+    c.setAttribute('tabindex', '0');
+    c.setAttribute('aria-label', 'Открыть урок: проект ' + p.n + ', ' + p.t);
+    c.onclick = openLesson;
+    c.onkeydown = (e) => {
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openLesson(); }
+    };
 
     grid.appendChild(c);
   });
@@ -870,6 +942,122 @@ function viewAdmin(){
     <div class="stat"><div class="l">Проектов собрано</div><div class="v">${totalDone}</div></div>
   </div>`));
 
+  /* --- Темп и доходимость ----------------------------------------------
+     «Проектов собрано» — число, которое только растёт и ничего не говорит:
+     оно одинаково хорошо выглядит и когда школа идёт, и когда встала.
+     Директору нужны два других вопроса: ускоряемся мы или тормозим,
+     и сколько детей вообще доходит до конца курса, а не бросает на третьем. */
+  const weeks = [];
+  for (let i = 5; i >= 0; i--) weeks.push({ i, n: Store.doneBetween(7*(i+1), 7*i) });
+  const wMax   = Math.max(1, ...weeks.map(w => w.n));
+  const thisW  = weeks[5].n, prevW = weeks[4].n;
+  const delta  = thisW - prevW;
+  const dTxt   = delta > 0 ? `на ${delta} ${plural(delta,'проект','проекта','проектов')} больше, чем неделей раньше`
+               : delta < 0 ? `на ${-delta} ${plural(-delta,'проект','проекта','проектов')} меньше, чем неделей раньше`
+               : 'столько же, сколько неделей раньше';
+
+  const half     = Math.ceil(NPROJ / 2);
+  const started  = db.students.filter(s => Store.doneCount(s.id) >= 1).length;
+  const midway   = db.students.filter(s => Store.doneCount(s.id) >= half).length;
+  const finished = db.students.filter(s => Store.doneCount(s.id) >= NPROJ).length;
+  const NS = db.students.length;
+  const pctOf = (v) => NS ? Math.round(v / NS * 100) : 0;
+
+  el.appendChild($(`<div class="section-head"><h2>Темп и доходимость</h2><span class="sub">За последние шесть недель</span></div>`));
+  const twoTop = $(`<div class="two"></div>`);
+
+  twoTop.appendChild($(`<div class="card">
+    <div class="stat" style="margin:0 0 6px"><div class="l">Собрано за 7 дней</div><div class="v">${thisW}</div></div>
+    <p class="muted" style="font-size:13.5px;margin:0;line-height:1.5">${dTxt}</p>
+    <div class="spark">${weeks.map(w => `<div class="col${w.i===0?' now':''}" title="${w.n} ${plural(w.n,'проект','проекта','проектов')}"><i style="height:${Math.round(w.n / wMax * 100)}%"></i></div>`).join('')}</div>
+    <div class="spark-x">${weeks.map(w => `<span>${w.i===0?'эта':'−'+w.i}</span>`).join('')}</div>
+    <p class="muted" style="font-size:13.5px;margin:14px 0 0;line-height:1.5">Каждый столбик — одна неделя, слева самая давняя, справа текущая. Высота — сколько проектов вся школа закрыла за ту неделю. Ровный ряд значит стабильный ход, проседание справа — что-то мешает прямо сейчас.</p>
+  </div>`));
+
+  const funnel = [
+    {t:'Начали',            s:'собрали хотя бы один проект',        v:started},
+    {t:'Дошли до середины', s:`собрали ${half} и больше из ${NPROJ}`, v:midway},
+    {t:'Прошли весь курс',  s:`все ${NPROJ} проектов`,               v:finished}
+  ];
+  twoTop.appendChild($(`<div class="card">
+    <div class="funnel">${funnel.map(f => `
+      <div class="fr">
+        <div class="fh"><span class="ft">${f.t}</span><span class="fv">${f.v}<small> из ${NS}</small></span></div>
+        <div class="bar"><i style="width:${pctOf(f.v)}%"></i></div>
+        <div class="fs">${f.s}</div>
+      </div>`).join('')}</div>
+    <p class="muted" style="font-size:13.5px;margin:16px 0 0;line-height:1.5">Три ступени одной воронки: сколько детей вообще стартовало, сколько добралось до середины и сколько дошло до конца. Обрыв между первой и второй строкой — это те, кто бросил в начале; между второй и третьей — те, кто устал на финише.</p>
+  </div>`));
+  el.appendChild(twoTop);
+
+  /* --- Кто застревает надолго и кто пропал -----------------------------
+     Обычный «застрял» преподаватель разбирает на ближайшем занятии.
+     Директору нужны те двое, кого система пропустила: ребёнок, который
+     держит один и тот же затык больше недели, и ребёнок, который просто
+     перестал что-либо отмечать — в общей статистике он не виден никак. */
+  const stuckLong = [];
+  db.students.forEach(s => PROJECTS.forEach(pr => {
+    const r = Store.prog(s.id, pr.n);
+    if (r.status !== 'stuck') return;
+    const d = Store.daysSince(r.updated);
+    if (d === null || d < 7) return;
+    stuckLong.push({s, p:pr, d, note:r.note, g:Store.group(s.groupCode)});
+  }));
+  stuckLong.sort((a,b) => b.d - a.d);
+
+  const idle = []; let never = 0;
+  db.students.forEach(s => {
+    const lt = Store.lastTouch(s.id);
+    if (!lt){ never++; return; }
+    const d = Store.daysSince(lt);
+    if (d !== null && d >= 14) idle.push({s, d, g:Store.group(s.groupCode), done:Store.doneCount(s.id)});
+  });
+  idle.sort((a,b) => b.d - a.d);
+
+  el.appendChild($(`<div class="section-head"><h2>Требуют внимания</h2><span class="sub">${stuckLong.length + idle.length ? stuckLong.length + idle.length + ' ' + plural(stuckLong.length + idle.length,'запись','записи','записей') : 'чисто'}</span></div>`));
+  const twoAtt = $(`<div class="two"></div>`);
+
+  const cStuck = $(`<div class="card"><h3 class="cardh">Застряли дольше недели</h3></div>`);
+  if (!stuckLong.length) cStuck.appendChild($(`<div class="empty ok">
+    <div class="ico">✓</div>
+    <div class="t">Таких нет</div>
+    <div class="s">Все затыки разбираются в течение недели. Сюда попадает ученик, который нажал «Не получается» и с тех пор так и не сдвинулся.</div>
+  </div>`));
+  else {
+    const t1 = $(`<table class="list"><thead><tr><th>Ученик</th><th>Группа</th><th>Проект</th><th>Ждёт</th></tr></thead><tbody></tbody></table>`);
+    const b1 = t1.querySelector('tbody');
+    stuckLong.forEach(r => b1.appendChild($(`<tr>
+      <td><b>${esc(r.s.name)}</b>${r.note ? `<div class="qn muted" style="font-size:13.5px;margin-top:3px;line-height:1.45;max-width:34ch">«${esc(r.note)}»</div>` : ''}</td>
+      <td style="white-space:nowrap">${esc(gShort(r.g))}</td>
+      <td>${String(r.p.n).padStart(2,'0')}<span class="pt"> · ${esc(r.p.t)}</span></td>
+      <td style="white-space:nowrap"><span class="chip stuck">${r.d} ${plural(r.d,'день','дня','дней')}</span></td>
+    </tr>`)));
+    const s1 = $(`<div class="tscroll"></div>`); s1.appendChild(t1); cStuck.appendChild(s1);
+    cStuck.appendChild($(`<p class="muted" style="font-size:13.5px;margin:14px 0 0;line-height:1.5">Ребёнок сам написал, что не получается, и с того дня ничего не изменилось. Больше недели на одном месте — это уже не «не разобрался», а «его не дождались»: стоит спросить преподавателя, что там произошло.</p>`));
+  }
+  twoAtt.appendChild(cStuck);
+
+  const cIdle = $(`<div class="card"><h3 class="cardh">Не двигаются две недели</h3></div>`);
+  if (!idle.length) cIdle.appendChild($(`<div class="empty ok">
+    <div class="ico">✓</div>
+    <div class="t">Все на связи</div>
+    <div class="s">У каждого ученика есть отметка за последние две недели. Сюда попадёт тот, кто перестал отмечать проекты — обычно это значит, что он перестал ходить.</div>
+  </div>`));
+  else {
+    const t2 = $(`<table class="list"><thead><tr><th>Ученик</th><th>Группа</th><th>Собрано</th><th>Тишина</th></tr></thead><tbody></tbody></table>`);
+    const b2 = t2.querySelector('tbody');
+    idle.forEach(r => b2.appendChild($(`<tr>
+      <td><b>${esc(r.s.name)}</b></td>
+      <td style="white-space:nowrap">${esc(gShort(r.g))}</td>
+      <td>${r.done} / ${NPROJ}</td>
+      <td style="white-space:nowrap"><span class="chip stuck">${r.d} ${plural(r.d,'день','дня','дней')}</span></td>
+    </tr>`)));
+    const s2 = $(`<div class="tscroll"></div>`); s2.appendChild(t2); cIdle.appendChild(s2);
+    cIdle.appendChild($(`<p class="muted" style="font-size:13.5px;margin:14px 0 0;line-height:1.5">Последняя отметка старше двух недель. Такой ученик не застрял — он молча выпал, и ни одна другая цифра на этой странице этого не покажет: его прогресс просто перестал меняться.${never ? ` Ещё ${never} ${plural(never,'ученик','ученика','учеников')} не ${plural(never,'отметил','отметили','отметили')} ни одного проекта — они пока нигде не считаются.` : ''}</p>`));
+  }
+  twoAtt.appendChild(cIdle);
+  el.appendChild(twoAtt);
+
   /* --- Группы в сравнении ---------------------------------------------
      Преподаватель видит только свою группу, и сравнить её ему не с чем.
      Директору нужно видеть все рядом: одинаковый курс, разный темп —
@@ -913,6 +1101,55 @@ function viewAdmin(){
     cmp.appendChild($(`<p class="muted" style="font-size:13.5px;margin:14px 0 0;line-height:1.5">Группы отсортированы по среднему прогрессу — сверху те, кто идёт быстрее. Нижняя строка отстаёт: курс у всех одинаковый, значит разница в темпе это вопрос к организации занятий, а не к детям.</p>`));
   }
   el.appendChild(cmp);
+
+  /* --- Вся школа по проектам ------------------------------------------
+     У преподавателя такая таблица есть по его группе. Директору нужна та же
+     картина, но по всем группам сразу: где кто стоит, кто застрял, и как
+     группы выглядят рядом друг с другом на одних и тех же столбцах. */
+  el.appendChild($(`<div class="section-head"><h2>Все ученики по проектам</h2></div>`));
+  const wrapA = $(`<div class="scrollx"></div>`);
+  const tblA = $(`<table class="mx">
+    <thead><tr><th style="text-align:left;padding-left:12px">Ученик</th>${PROJECTS.map(p=>`<th title="${esc(p.t)} — открыть урок"><a class="mxh" target="_blank" href="${CONFIG.GUIDE_URL}#proj-${p.n}">${String(p.n).padStart(2,'0')}</a></th>`).join('')}<th>Итого</th></tr></thead>
+    <tbody></tbody></table>`);
+  const tbA = tblA.querySelector('tbody');
+
+  if (!db.groups.length){
+    tbA.appendChild($(`<tr><td colspan="${NPROJ+2}" class="empty">Групп пока нет</td></tr>`));
+  } else db.groups.forEach(g => {
+    const list = Store.studentsOf(g.code);
+    const t = Store.teacher(g.teacherId);
+    let stuckG = 0;
+    list.forEach(s => PROJECTS.forEach(p => { if (Store.prog(s.id,p.n).status==='stuck') stuckG++; }));
+    const avgG = list.length ? (list.reduce((a,s)=>a+Store.doneCount(s.id),0)/list.length) : 0;
+
+    tbA.appendChild($(`<tr class="mx-grp"><th colspan="${NPROJ+2}">
+      ${esc(g.name)} <span class="s">${esc(t?t.name:'без преподавателя')} · ${list.length} чел. · в среднем ${avgG.toFixed(1)} из ${NPROJ}${stuckG?' · застряли '+stuckG:''}</span>
+    </th></tr>`));
+
+    if (!list.length){
+      tbA.appendChild($(`<tr><td colspan="${NPROJ+2}" class="muted" style="padding:10px 15px">В группе пока нет учеников</td></tr>`));
+      return;
+    }
+    list.forEach(s => {
+      const tr = $(`<tr><th>${esc(s.name)}</th></tr>`);
+      PROJECTS.forEach(p => {
+        const pr = Store.prog(s.id, p.n);
+        const cs = Store.state(s.id, p.n);
+        tr.appendChild($(`<td class="cell"><i class="s-${cs}" title="${esc(s.name)} · Проект ${p.n} · ${STATUS[cs].label}${pr.note?' — '+esc(pr.note):''}">${STATUS[cs].short}</i></td>`));
+      });
+      tr.appendChild($(`<td style="text-align:center;font-family:var(--mono);font-size:12px;padding:0 8px">${Store.doneCount(s.id)}</td>`));
+      tbA.appendChild(tr);
+    });
+  });
+  wrapA.appendChild(tblA);
+  el.appendChild(wrapA);
+  el.appendChild($(`<div class="legend">
+    <span><i style="background:var(--green)"></i> собрано</span>
+    <span><i style="background:#F0D98A"></i> делает сейчас</span>
+    <span><i style="background:var(--signal)"></i> застрял</span>
+    <span><i style="background:var(--paper)"></i> ещё не начинал</span>
+    <span class="muted">наведи курсор на клетку — покажет, что именно не получается</span>
+  </div>`));
 
   const tabs = $(`<div class="tabs" style="margin-top:30px">
     <button data-t="groups"   class="${S.tab==='groups'?'on':''}">Группы</button>
