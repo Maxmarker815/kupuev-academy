@@ -875,3 +875,27 @@ table.mx tbody tr.mx-grp th .s{ font-weight:500; font-size:13.5px; color:var(--i
      Для не-флексовых элементов правило ничего не делает. */
   .lesson .pages div, .lesson .pages li, .lesson .pages ul{ flex-wrap:wrap !important; }
 }
+
+/* Когда ученик написал «не получается»: справа в строке с именем, мелко
+   и приглушённо. Преподаватель считывает имя, а время замечает только
+   когда оно ему нужно — глазу оно не мешает. */
+/* Время стоит сразу за именем, а не у правого края: карточка широкая,
+   и у края оно отрывалось от имени и липло к кнопкам справа. */
+.stuck-item .nm-row{ display:flex; align-items:baseline; gap:12px;
+  justify-content:flex-start; flex-wrap:wrap; }
+.stuck-item .nm-row .nm{ font-size:19px !important; }
+.stuck-item .when{ flex:none; font-size:13.5px !important; font-weight:400 !important;
+  color:var(--ink-3) !important; white-space:nowrap; }
+@media(max-width:820px){
+  .stuck-item .nm-row{ gap:6px; }
+  .stuck-item .when{ font-size:12px !important; }
+}
+
+/* На телефоне выпадающий список групп не сжимался: длинное название
+   («Робототехника · 7А · вт/чт 16:00 · ROBO-7A») распирало страницу вбок. */
+@media(max-width:820px){
+  .section-head{ flex-wrap:wrap !important; }
+  .section-head select{ width:100% !important; max-width:100% !important;
+    min-width:0 !important; }
+  .section-head .spacer{ display:none !important; }
+}

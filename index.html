@@ -181,7 +181,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1788728552">
+<link rel="stylesheet" href="theme.css?v=1788729668">
 </head>
 <body>
 
@@ -431,7 +431,9 @@ function seedDemo(){
     const next = done + 1;
     if (next <= NPROJ && i % 4 === 1){
       const stuckDays = (i % 8 === 1) ? 8 + (i % 5) : 1 + (i % 3);
-      progress[st.id+':'+next] = {status:'stuck', note:stuckNotes[next]||'', updated: ago(stuckDays)};
+      const hourShift = 5 + ((i * 7) % 9);   // разные часы, иначе у всех одно время
+      progress[st.id+':'+next] = {status:'stuck', note:stuckNotes[next]||'',
+        updated: new Date(Date.now() - stuckDays*86400000 - hourShift*3600000).toISOString()};
     }
   });
 
@@ -446,6 +448,26 @@ let S = {screen:'login', role:null, teacherId:null, studentId:null, groupCode:nu
 // <template> нужен, чтобы браузер правильно разбирал строки таблиц (<tr>, <td>)
 const $ = (h) => { const t=document.createElement('template'); t.innerHTML=h.trim(); return t.content.firstElementChild; };
 const esc = (s) => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Когда ученик написал «не получается». Преподавателю важно не «12 дней назад»,
+// а конкретно: сегодня на занятии или ещё на прошлой неделе дома.
+const MONTHS_R = ['января','февраля','марта','апреля','мая','июня',
+                  'июля','августа','сентября','октября','ноября','декабря'];
+const fmtWhen = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const two = (n) => String(n).padStart(2,'0');
+  const time = two(d.getHours()) + ':' + two(d.getMinutes());
+  const now = new Date();
+  const day   = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diff  = Math.round((today - day) / 86400000);
+  if (diff === 0) return 'сегодня, ' + time;
+  if (diff === 1) return 'вчера, ' + time;
+  const date = d.getDate() + ' ' + MONTHS_R[d.getMonth()];
+  return (d.getFullYear() === now.getFullYear() ? date : date + ' ' + d.getFullYear()) + ', ' + time;
+};
+
 // В узкой колонке полное название группы («Робототехника · 7А · вт/чт 16:00»)
 // переносится на две строки и мешает читать. Берём из него только сам класс.
 const gShort = (g) => {
@@ -811,7 +833,7 @@ function viewTeacher(){
   list.forEach(s => PROJECTS.forEach(p => {
     const pr = Store.prog(s.id, p.n);
     if (pr.status==='done') doneC++;
-    if (pr.status==='stuck') stuckList.push({s, p, note:pr.note});
+    if (pr.status==='stuck') stuckList.push({s, p, note:pr.note, at:pr.updated});
   }));
   const avg = list.length ? (list.reduce((a,s)=>a+Store.doneCount(s.id),0)/list.length) : 0;
 
@@ -861,11 +883,12 @@ function viewTeacher(){
     <div class="t">Сейчас никто не застрял</div>
     <div class="s">Вся группа идёт без затыков. Если кто-то упрётся — он нажмёт «Не получается» у себя, и запись появится здесь.</div>
   </div>`));
-  stuckList.forEach(({s,p,note}) => {
+  stuckList.forEach(({s,p,note,at}) => {
+    const when = fmtWhen(at);
     const it = $(`<div class="stuck-item">
       <div class="badge">${String(p.n).padStart(2,'0')}</div>
       <div class="grow">
-        <div class="nm">${esc(s.name)}</div>
+        <div class="nm-row"><span class="nm">${esc(s.name)}</span>${when ? `<span class="when">${when}</span>` : ''}</div>
         <div class="muted" style="font-size:13.5px">Проект ${String(p.n).padStart(2,'0')} · ${esc(p.t)}</div>
         ${note ? `<div class="qt">«${esc(note)}»</div>` : `<div class="qt muted">Без описания</div>`}
       </div>
