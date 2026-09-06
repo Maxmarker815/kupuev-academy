@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="guide/styles.css">
-<link rel="stylesheet" href="theme.css?v=1788453650">
+<link rel="stylesheet" href="theme.css?v=1788710298">
 <style>
 /* =====================================================================
    Курс = уроки внутри платформы. Текст уроков взят из печатной книги
@@ -1513,6 +1513,57 @@ document.addEventListener('contextmenu', function(e) { e.preventDefault(); retur
     for (var i=1;i<=17;i++) if (status(i) === 'done') L = i;
     return L;
   }
+  /* Короткое подтверждение внизу экрана — те же стили, что в кабинетах. */
+  function ctoast(text){
+    var box = document.getElementById('toasts');
+    if (!box){ box = document.createElement('div'); box.className='toasts'; box.id='toasts';
+               document.body.appendChild(box); }
+    var t = document.createElement('div'); t.className='toast'; t.textContent = text;
+    box.appendChild(t);
+    requestAnimationFrame(function(){ t.classList.add('in'); });
+    setTimeout(function(){ t.classList.remove('in'); setTimeout(function(){ t.remove(); }, 260); }, 2800);
+  }
+
+  function noteOf(n){ var r = db && db.progress ? db.progress[me+':'+n] : null; return r ? (r.note||'') : ''; }
+
+  function setStuck(n, note){
+    db.progress[me + ':' + n] = {status:'stuck', note:note, updated:new Date().toISOString()};
+    if (live) { api('setProgress', {studentId:me, proj:n, status:'stuck', note:note}); }
+    else { try{ localStorage.setItem('robo_school_db_v4', JSON.stringify(db)); }catch(e){} }
+  }
+
+  /* Окно «Что не получается». Ребёнок пишет своими словами, прямо из урока —
+     не выходя туда, где он читает и собирает. */
+  function askStuck(n, art){
+    var bg = document.createElement('div');
+    bg.className = 'c-modal-bg';
+    bg.innerHTML =
+      '<div class="c-modal" role="dialog" aria-modal="true">' +
+      '<h3>Что не получается?</h3>' +
+      '<p class="c-modal-sub">Опиши своими словами, что не выходит. Преподаватель увидит это ' +
+      'у себя и подойдёт к тебе на занятии.</p>' +
+      '<textarea id="cmnote" rows="4" placeholder="Например: подсветка горит, а текста на экране нет"></textarea>' +
+      '<div class="c-modal-acts">' +
+      '<button class="c-btn" id="cmcancel">Отмена</button>' +
+      '<button class="c-btn primary" id="cmok">Отправить</button>' +
+      '</div></div>';
+    document.body.appendChild(bg);
+    var ta = bg.querySelector('#cmnote');
+    ta.value = noteOf(n);
+    ta.focus();
+    function close(){ bg.remove(); }
+    bg.querySelector('#cmcancel').onclick = close;
+    bg.addEventListener('click', function(e){ if (e.target === bg) close(); });
+    document.addEventListener('keydown', function esc(e){
+      if (e.key === 'Escape'){ close(); document.removeEventListener('keydown', esc); }
+    });
+    bg.querySelector('#cmok').onclick = function(){
+      setStuck(n, ta.value.trim());
+      close(); paintRail(); paintFoot(art);
+      ctoast('Преподаватель увидит это у себя');
+    };
+  }
+
   function setDone(n, done){
     var key = me + ':' + n;
     db.progress[key] = {status: done ? 'done' : 'todo', note:'', updated: new Date().toISOString()};
@@ -1548,12 +1599,23 @@ document.addEventListener('contextmenu', function(e) { e.preventDefault(); retur
         if (!done){ var i = keys.indexOf('proj-' + n); if (i > -1 && i+1 < keys.length) show(keys[i+1]); }
       };
       foot.appendChild(b);
+
+      // «Не получается» — прямо в уроке, там где человек упирается
+      var stuck = status(n) === 'stuck';
+      var sb = document.createElement('button');
+      sb.className = 'c-btn' + (stuck ? ' stuck' : '');
+      sb.textContent = stuck ? 'Изменить сообщение' : 'Не получается';
+      sb.onclick = function(){ askStuck(n, art); };
+      foot.appendChild(sb);
+
       var hint = document.createElement('span');
       hint.className = 'c-hint';
-      hint.textContent = can
-        ? (done ? 'Отмечено. Преподаватель это видит.' : 'Нажми, когда проект заработает вживую.')
-        : (done ? 'Снять отметку можно только с последнего собранного проекта.'
-                : 'Проекты идут по порядку — сначала собери предыдущий.');
+      hint.textContent = stuck
+        ? 'Ты написал, что не получается. Преподаватель это видит.'
+        : (can
+            ? (done ? 'Отмечено. Преподаватель это видит.' : 'Нажми, когда проект заработает вживую.')
+            : (done ? 'Снять отметку можно только с последнего собранного проекта.'
+                    : 'Проекты идут по порядку — сначала собери предыдущий.'));
       foot.appendChild(hint);
     } else if (n){
       var s = document.createElement('span');
