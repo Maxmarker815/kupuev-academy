@@ -181,7 +181,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1788729668">
+<link rel="stylesheet" href="theme.css?v=1788731914">
 </head>
 <body>
 
@@ -868,15 +868,11 @@ function viewTeacher(){
     el.appendChild(today);
   }
 
-  el.appendChild($(`<div class="stat-row">
-    <div class="stat"><div class="l">Учеников</div><div class="v">${list.length}</div></div>
-    <div class="stat"><div class="l">Средний прогресс</div><div class="v">${avg.toFixed(1)}<small> / ${NPROJ}</small></div></div>
-    <div class="stat"><div class="l">Проектов закрыто</div><div class="v">${doneC}<small> / ${totalCells}</small></div></div>
-    <div class="stat" style="${stuckList.length?'border-color:var(--signal);background:var(--signal-tint)':''}"><div class="l">Застряли сейчас</div><div class="v" style="${stuckList.length?'color:var(--signal)':''}">${stuckList.length}</div></div>
-  </div>`));
-
   /* --- кто застрял --- */
-  el.appendChild($(`<div class="section-head"><h2>Кому нужна помощь</h2></div>`));
+  // Список идёт сразу под «Уроком сегодня»: на занятии преподаватель смотрит
+  // именно сюда, а общие числа по группе — это отчётность, им место ниже.
+  // Счётчик застрявших стоит прямо в заголовке, чтобы не дублировать его плашкой.
+  el.appendChild($(`<div class="section-head"><h2>Кому нужна помощь${stuckList.length?` <span class="cnt">${stuckList.length}</span>`:''}</h2></div>`));
   const sc = $(`<div class="card"></div>`);
   if (!stuckList.length) sc.appendChild($(`<div class="empty ok">
     <div class="ico">✓</div>
@@ -888,11 +884,10 @@ function viewTeacher(){
     const it = $(`<div class="stuck-item">
       <div class="badge">${String(p.n).padStart(2,'0')}</div>
       <div class="grow">
-        <div class="nm-row"><span class="nm">${esc(s.name)}</span>${when ? `<span class="when">${when}</span>` : ''}</div>
-        <div class="muted" style="font-size:13.5px">Проект ${String(p.n).padStart(2,'0')} · ${esc(p.t)}</div>
+        <div class="nm-row"><span class="nm">${esc(s.name)}</span><span class="proj">${esc(p.t)}</span>${when ? `<span class="when">${when}</span>` : ''}</div>
         ${note ? `<div class="qt">«${esc(note)}»</div>` : `<div class="qt muted">Без описания</div>`}
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px"></div>
+      <div class="acts"></div>
     </div>`);
     const box = it.lastElementChild;
     // Ученик застрял на конкретном проекте — преподавателю нужен именно он,
@@ -917,6 +912,12 @@ function viewTeacher(){
     sc.appendChild(it);
   });
   el.appendChild(sc);
+
+  el.appendChild($(`<div class="stat-row stat-row-after">
+    <div class="stat"><div class="l">Учеников</div><div class="v">${list.length}</div></div>
+    <div class="stat"><div class="l">Средний прогресс</div><div class="v">${avg.toFixed(1)}<small> / ${NPROJ}</small></div></div>
+    <div class="stat"><div class="l">Проектов закрыто</div><div class="v">${doneC}<small> / ${totalCells}</small></div></div>
+  </div>`));
 
   /* --- матрица --- */
   el.appendChild($(`<div class="section-head"><h2>Вся группа на одном экране</h2></div>`));

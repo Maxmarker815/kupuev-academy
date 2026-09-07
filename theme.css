@@ -899,3 +899,63 @@ table.mx tbody tr.mx-grp th .s{ font-weight:500; font-size:13.5px; color:var(--i
     min-width:0 !important; }
   .section-head .spacer{ display:none !important; }
 }
+
+/* ── «Кому нужна помощь»: строка вместо карточки ───────────────────────────
+   Высоту строки задавали не данные, а три кнопки, поставленные столбиком:
+   текст занимал 107px, а колонка кнопок 131px — и вся строка выходила 168px.
+   На экране ноутбука 1440×900 преподаватель видел одного застрявшего из пяти,
+   остальных приходилось искать прокруткой прямо на занятии.
+   Теперь: кнопки в ряд, название проекта переехало в строку с именем (номер
+   и так стоит в кружке слева, дублировать его текстом незачем), цитата без
+   серой плашки и с ограниченной мерой строки. Строка 168 → 75px. */
+.stuck-item{ padding:11px 0 !important; gap:13px !important; align-items:center !important; }
+.stuck-item .badge{ width:38px !important; height:38px !important; font-size:14px !important; }
+.stuck-item .nm-row{ gap:10px; }
+.stuck-item .nm-row .nm{ font-size:17.5px !important; }
+.stuck-item .proj{ font-size:15px !important; color:var(--ink-3); }
+.stuck-item .proj::before{ content:'· '; }
+/* Мера строки, как в уроках: длинная жалоба не должна тянуться через всю
+   карточку — глаз теряет начало следующей строки. */
+.stuck-item .qt{ max-width:620px; margin-top:2px; padding:0 !important;
+  background:none !important; border-left:0 !important;
+  font-size:15.5px !important; color:var(--ink-2) !important; }
+.stuck-item .qt.muted{ color:var(--ink-3) !important; }
+.stuck-item .acts{ display:flex; flex-direction:row; align-items:center; gap:8px; flex:none; }
+.stuck-item .btn.sm{ font-size:14px !important; padding:7px 13px !important; }
+
+/* Счётчик застрявших переехал из плашки в заголовок — одна вещь в одном месте.
+   Красный тут по смыслу: это тот же сигнал «застрял», что и везде в системе. */
+.section-head h2 .cnt{ display:inline-grid; place-items:center; min-width:30px; height:30px;
+  padding:0 9px; margin-left:12px; border-radius:15px; background:var(--signal); color:#fff;
+  font-family:var(--sans); font-size:16px; font-weight:600; vertical-align:middle; }
+
+/* Общие числа по группе теперь под списком: это цифры для отчёта, а не для
+   занятия. Отступ сверху, чтобы они не липли к последней строке списка. */
+.stat-row-after{ margin-top:26px; }
+
+@media(max-width:820px){
+  /* На телефоне кнопки уходят под текст и делят ширину поровну. */
+  .stuck-item{ align-items:flex-start !important; }
+  .stuck-item .acts{ flex-wrap:wrap; width:100%; margin-top:8px; }
+  .stuck-item .acts .btn.sm{ flex:1 1 auto; }
+  .stuck-item .qt{ max-width:100%; }
+  .section-head h2 .cnt{ min-width:26px; height:26px; font-size:14px; margin-left:9px; }
+}
+
+/* На узком экране (планшет, окно вполовину монитора) кнопки съедают ширину,
+   и время съезжало на отдельную строку, отрываясь от имени. Держим строку
+   «имя · проект · когда» единой, а длинное название проекта подрезаем
+   многоточием — номер всё равно стоит в кружке слева. */
+@media(min-width:821px){
+  .stuck-item .nm-row{ flex-wrap:nowrap; }
+  /* Имя не переносим и не сжимаем — по нему преподаватель ищет глазами.
+     Сжимается только название проекта. */
+  .stuck-item .nm-row .nm{ flex:none; white-space:nowrap; }
+  .stuck-item .proj{ flex:0 1 auto; min-width:0; overflow:hidden;
+    text-overflow:ellipsis; white-space:nowrap; }
+}
+/* На телефоне название проекта переносится на свою строку, и точка-разделитель
+   в её начале выглядит мусором. */
+@media(max-width:820px){
+  .stuck-item .proj::before{ content:none; }
+}
