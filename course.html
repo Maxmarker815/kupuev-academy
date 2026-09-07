@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="guide/styles.css">
-<link rel="stylesheet" href="theme.css?v=1788731914">
+<link rel="stylesheet" href="theme.css?v=1788762658">
 <style>
 /* =====================================================================
    Курс = уроки внутри платформы. Текст уроков взят из печатной книги
@@ -102,7 +102,43 @@ body.course .toc-rail,body.course .progress-rail{display:none!important}
   .c-main{padding:18px 16px 80px}
   .lesson{zoom:1}
 }
-@media print{.c-top,.c-rail,.c-foot,.c-lhead{display:none!important}}
+/* ---------- полоса «помогаешь ученику» ----------
+   Видна только преподавателю и только когда урок открыт кнопкой «Урок»
+   из карточки застрявшего. Стоит внизу и не уезжает при прокрутке:
+   преподаватель листает урок, стоя у стола ученика, а отметить результат
+   должен здесь же — не разыскивая вкладку с группой. */
+.c-help{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--paper-2);
+  border-top:1px solid var(--rule-strong);box-shadow:0 -6px 22px rgba(4,0,87,.12)}
+.c-help-in{display:flex;align-items:center;gap:16px;flex-wrap:nowrap;
+  padding:14px 30px;max-width:1560px;margin:0 auto}
+/* Имя и проект не сжимаются — по ним преподаватель и понимает, кому помогает.
+   Сжимается и подрезается только цитата, а кнопки держатся вместе справа
+   и никогда не перескакивают на вторую строку. */
+.c-help .who{flex:none;font-size:16px;line-height:1.4;white-space:nowrap}
+.c-help .who b{font-weight:600}
+.c-help .who .pr{color:var(--ink-3)}
+.c-help .qt{flex:0 1 auto;min-width:0;font-size:14px;color:var(--ink-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-help .sp{flex:1;min-width:0}
+.c-help .ok{color:var(--green);font-weight:700;margin-right:9px}
+.c-help .acts{flex:none;display:flex;align-items:center;gap:10px}
+/* Чтобы полоса не накрывала последние строки урока. */
+body.helping .c-main{padding-bottom:150px}
+@media(max-width:820px){
+  /* На телефоне полоса становится в две строки: сверху кто и что,
+     снизу кнопки во всю ширину. */
+  .c-help-in{padding:12px 16px;gap:8px;flex-wrap:wrap}
+  .c-help .who{white-space:normal;font-size:15px;flex:1 1 100%}
+  .c-help .qt{white-space:normal;overflow:visible;flex:1 1 100%}
+  .c-help .sp{display:none}
+  .c-help .acts{width:100%;flex-wrap:wrap}
+  .c-help .acts .c-btn{flex:1 1 auto;text-align:center}
+  /* «Следующий» — не действие над учеником, а переход. На телефоне он уходит
+     на свою строку, чтобы две главные кнопки не сжимались в два слова. */
+  .c-help .acts .c-btn.next{flex:1 1 100%}
+  body.helping .c-main{padding-bottom:210px}
+}
+@media print{.c-top,.c-rail,.c-foot,.c-lhead,.c-help{display:none!important}}
 </style>
 </head>
 <body class="course">
@@ -112,7 +148,7 @@ body.course .toc-rail,body.course .progress-rail{display:none!important}
   <button class="c-btn c-burger" id="burger">☰</button>
   <a class="c-brand" href="index.html" title="KUPUEV ACADEMY"><img class="lg-wide" src="logo.svg" alt="KUPUEV ACADEMY"><img class="lg-mark" src="logo-block.svg" alt=""></a>
   <div class="c-sp"></div>
-  <a class="c-btn" href="index.html">← Мои проекты</a>
+  <a class="c-btn" id="backlink" href="index.html">← Мои проекты</a>
 </div></div>
 
 <div class="c-shell">
@@ -1678,6 +1714,177 @@ document.addEventListener('contextmenu', function(e) { e.preventDefault(); retur
 
   paintRail();
   show(location.hash.slice(1) || (isStudent && firstOpen() ? 'proj-' + firstOpen() : keys[0]));
+
+  /* --- куда ведёт кнопка возврата ------------------------------------
+     Правило: выход должен совпадать со входом. Ученик и преподаватель,
+     пришедший помогать конкретному ученику, попадают сюда переходом в той
+     же вкладке — им нужна кнопка возврата. А урок дня и урок из таблицы
+     группы открываются отдельной вкладкой: оттуда выходят, закрывая её,
+     и кнопка «назад» там плодила бы вторую копию кабинета в соседней
+     вкладке. Выход со страницы всё равно остаётся — логотип слева. */
+  function qp(k){ try{ return new URLSearchParams(location.search).get(k); }catch(e){ return null; } }
+  var role = (sess && sess.role) ? sess.role : null;
+  var helping = (role === 'teacher') && !!qp('help') && !!(+(qp('proj') || 0));
+  var back = document.getElementById('backlink');
+  if (back && role !== 'student'){
+    if (helping) back.textContent = '← К группе';
+    else back.remove();
+  }
+
+  /* --- очередь застрявших ---------------------------------------------
+     Преподаватель жмёт «Урок» у застрявшего — в ссылке едут номер ученика
+     и номер проекта. Внизу появляется полоса: кому он сейчас помогает и
+     что у того не получается. Отметил результат — полоса тут же предлагает
+     следующего застрявшего в группе и сама переключает урок на его проект.
+     За занятие преподаватель обходит всех, ни разу не возвращаясь в список:
+     список для этого и не нужен, работа идёт по очереди людей. */
+  function studentById(id){
+    if (!db || !db.students) return null;
+    for (var i = 0; i < db.students.length; i++) if (db.students[i].id === id) return db.students[i];
+    return null;
+  }
+  function setFor(id, n, st){
+    if (!db || !db.progress) return;
+    db.progress[id + ':' + n] = {status:st, note:'', updated:new Date().toISOString()};
+    if (live) { api('setProgress', {studentId:id, proj:n, status:st, note:''}); }
+    else { try{ localStorage.setItem('robo_school_db_v4', JSON.stringify(db)); }catch(e){} }
+  }
+  /* Очередь строится в том же порядке, что и список в кабинете: по проектам,
+     внутри проекта — кто дольше ждёт. Смысл в том, чтобы преподаватель помог
+     всем застрявшим на одном проекте подряд, пока картина этого проекта у
+     него в голове, и только потом переходил к следующему. */
+  function stuckQueue(){
+    var out = [], g = (sess && sess.groupCode) ? sess.groupCode : null;
+    if (!db || !db.students || !db.progress || !g) return out;
+    db.students.forEach(function(s){
+      if (s.groupCode !== g) return;
+      for (var i = 1; i <= 17; i++){
+        var r = db.progress[s.id + ':' + i];
+        if (r && r.status === 'stuck') out.push({id:s.id, name:s.name, n:i, at:r.updated || ''});
+      }
+    });
+    out.sort(function(a,b){ return (a.n - b.n) || String(a.at).localeCompare(String(b.at)); });
+    return out;
+  }
+  function projTitle(n){
+    var a = document.querySelector('.c-rail [data-k="proj-' + n + '"]');
+    var t = a ? a.querySelector('.c-t') : null;
+    return t ? t.textContent.trim() : '';
+  }
+  function two(n){ return (n < 10 ? '0' : '') + n; }
+
+  (function helpBar(){
+    if (!helping) return;
+    var cur = {id: qp('help'), n: +(qp('proj') || 0)};
+    var st = studentById(cur.id);
+    if (!st) return;
+
+    var bar = document.createElement('div'); bar.className = 'c-help';
+    var inn = document.createElement('div'); inn.className = 'c-help-in';
+    bar.appendChild(inn);
+    function spacer(){ var s = document.createElement('span'); s.className = 'sp'; return s; }
+    function actsBox(){ var a = document.createElement('span'); a.className = 'acts'; return a; }
+
+    /* Переход к следующему ученику: урок сам перелистывается на его проект,
+       адрес страницы тоже обновляется — если преподаватель обновит вкладку
+       или вернётся по закладке, он окажется там же, где был. */
+    function goTo(next){
+      cur = {id: next.id, n: next.n};
+      st = studentById(cur.id);
+      show('proj-' + cur.n);
+      try {
+        history.replaceState(null, '', location.pathname + '?help=' +
+          encodeURIComponent(cur.id) + '&proj=' + cur.n + '#proj-' + cur.n);
+      } catch(e){}
+      fill();
+    }
+
+    function fill(){
+      var rec = (db.progress && db.progress[cur.id + ':' + cur.n]) || {};
+      var ttl = projTitle(cur.n);
+      inn.innerHTML = '';
+      var who = document.createElement('span'); who.className = 'who';
+      who.appendChild(document.createTextNode('Помогаешь: '));
+      var b = document.createElement('b'); b.textContent = st.name; who.appendChild(b);
+      var pr = document.createElement('span'); pr.className = 'pr';
+      pr.textContent = ' · ' + two(cur.n) + (ttl ? ' · ' + ttl : '');
+      who.appendChild(pr);
+      inn.appendChild(who);
+      if (rec.note){
+        var q = document.createElement('span'); q.className = 'qt';
+        q.textContent = '«' + rec.note + '»';
+        inn.appendChild(q);
+      }
+      inn.appendChild(spacer());
+      var acts = actsBox();
+      var ok = document.createElement('button'); ok.className = 'c-btn primary';
+      ok.textContent = 'Проект работает';
+      ok.onclick = function(){
+        setFor(cur.id, cur.n, 'done');
+        afterMark('проект ' + two(cur.n) + ' отмечен собранным', true);
+      };
+      var half = document.createElement('button'); half.className = 'c-btn';
+      half.textContent = 'Помог, доделает';
+      half.onclick = function(){
+        setFor(cur.id, cur.n, 'doing');
+        afterMark('отметка «застрял» снята, доделывает', false);
+      };
+      acts.appendChild(ok); acts.appendChild(half);
+      /* Пропустить можно, ничего не отмечая. Без этого, чтобы дойти до
+         следующего, преподаватель был бы вынужден поставить отметку,
+         которой на самом деле не было. */
+      var rest = stuckQueue().filter(function(x){ return !(x.id === cur.id && x.n === cur.n); });
+      if (rest.length){
+        var skip = document.createElement('button'); skip.className = 'c-btn next';
+        skip.textContent = 'Следующий →';
+        skip.onclick = function(){ goTo(rest[0]); };
+        acts.appendChild(skip);
+      }
+      inn.appendChild(acts);
+    }
+
+    /* Полоса сама и есть подтверждение: она стоит ровно там, куда
+       преподаватель только что нажал, и никуда не денется. Всплывающее
+       сообщение поверх неё было бы той же фразой второй раз. */
+    function afterMark(what, isDone){
+      var name = st.name;
+      var next = stuckQueue()[0];
+      inn.innerHTML = '';
+      var who = document.createElement('span'); who.className = 'who';
+      if (isDone){
+        var mk = document.createElement('span'); mk.className = 'ok'; mk.textContent = '✓';
+        who.appendChild(mk);
+      }
+      who.appendChild(document.createTextNode(name + ' — ' + what));
+      inn.appendChild(who);
+      if (!next){
+        var all = document.createElement('span'); all.className = 'qt';
+        all.textContent = 'Больше застрявших в группе нет';
+        inn.appendChild(all);
+      }
+      inn.appendChild(spacer());
+      var acts = actsBox();
+      if (next){
+        var nb = document.createElement('button'); nb.className = 'c-btn primary';
+        // Если следующий застрял на том же проекте — говорим об этом прямо:
+        // преподавателю не надо ничего перечитывать, картина уже в голове.
+        nb.textContent = (next.n === cur.n)
+          ? 'Следующий: ' + next.name + ' · тот же проект →'
+          : 'Следующий: ' + next.name + ' · ' + two(next.n) + ' →';
+        nb.onclick = function(){ goTo(next); };
+        acts.appendChild(nb);
+      } else {
+        var go = document.createElement('a'); go.className = 'c-btn primary'; go.href = 'index.html';
+        go.textContent = '← К группе';
+        acts.appendChild(go);
+      }
+      inn.appendChild(acts);
+    }
+
+    fill();
+    document.body.appendChild(bar);
+    document.body.classList.add('helping');
+  })();
  } catch(err){
   // Страховка: что бы ни случилось, текст должен остаться читаемым —
   // показываем все уроки подряд, одной длинной страницей.

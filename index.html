@@ -181,7 +181,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1788731914">
+<link rel="stylesheet" href="theme.css?v=1788762658">
 </head>
 <body>
 
@@ -398,7 +398,26 @@ function seedDemo(){
   // затем один текущий проект, всё остальное — ещё не начато.
   // 9В (старшие) ушли дальше всех, 5Б набрали недавно и только начали.
   const progress = {};
-  const reach   = {'ROBO-7A':[5,9],  'ROBO-5B':[1,4],  'ROBO-9V':[10,17]};
+  // Класс не растянут ровной лесенкой по одному ученику на проект. В жизни
+  // вокруг текущего урока стоит кучка, кто-то ушёл вперёд, кто-то отстал.
+  // Поэтому у нескольких человек в группе номер один и тот же — а значит и
+  // застревают они в одном месте, и преподавателю есть смысл разбирать их
+  // подряд. 9В (старшие) ушли дальше всех, 5Б набрали недавно и только начали.
+  const SPREAD = {
+    'ROBO-7A': [5,5,6,5,7,4,6,8,7,9],
+    'ROBO-5B': [2,2,3,1,2,4,3],
+    'ROBO-9V': [12,12,13,11,14,12,16,17]
+  };
+  // Кто застрял и сколько дней назад написал. Список, а не формула: в группе
+  // всегда есть общий затык — несколько человек уперлись в одно и то же место
+  // (пайка гребёнки на LCD, библиотека датчика) — и есть одиночки, до которых
+  // неделю никто не дошёл: это то, что должен увидеть директор.
+  // В 7А ученики 0, 1 и 3 стоят на одном проекте — они и дают общий затык.
+  const STUCK = {
+    'ROBO-7A': {0:9, 1:2, 3:1, 7:11, 9:3},
+    'ROBO-5B': {1:8, 4:2},
+    'ROBO-9V': {2:12, 5:1}
+  };
   // сколько дней назад группа начала заниматься — от этого зависит,
   // растянуты её отметки на все шесть недель графика или только на последние
   const opened  = {'ROBO-7A':63, 'ROBO-5B':26, 'ROBO-9V':72};
@@ -408,8 +427,8 @@ function seedDemo(){
   students.forEach(st => {
     const i = counters[st.groupCode] = (counters[st.groupCode] || 0);
     counters[st.groupCode]++;
-    const [lo,hi] = reach[st.groupCode];
-    const done = lo + (i % (hi - lo + 1));           // сколько проектов собрано подряд
+    const spread = SPREAD[st.groupCode];
+    const done = spread[i % spread.length];          // сколько проектов собрано подряд
 
     // Даты разложены по прошедшим неделям, иначе блоки про темп и «не двигаются»
     // показывали бы пустоту: у всех отметок была бы одна дата — сегодняшняя.
@@ -426,11 +445,12 @@ function seedDemo(){
       progress[st.id+':'+p] = {status:'done', note:'', updated: ago(lastGap + (done - p) * step + jitter)};
     }
 
-    // Каждый четвёртый ученик застрял на следующем проекте и написал об этом.
-    // Часть из них — давно, и к ним никто не подошёл: это важный сигнал директору.
+    // Застрявшие берутся из списка выше: часть группы стоит на одном проекте,
+    // часть — поодиночке, и к некоторым никто не подошёл дольше недели.
     const next = done + 1;
-    if (next <= NPROJ && i % 4 === 1){
-      const stuckDays = (i % 8 === 1) ? 8 + (i % 5) : 1 + (i % 3);
+    const stuckIdx = STUCK[st.groupCode] || {};
+    if (next <= NPROJ && (i in stuckIdx)){
+      const stuckDays = stuckIdx[i];
       const hourShift = 5 + ((i * 7) % 9);   // разные часы, иначе у всех одно время
       progress[st.id+':'+next] = {status:'stuck', note:stuckNotes[next]||'',
         updated: new Date(Date.now() - stuckDays*86400000 - hourShift*3600000).toISOString()};
@@ -497,6 +517,37 @@ function restore(){
     return true;
   }catch(e){ return false; }
 }
+/* Преподаватель отмечает результат во вкладке с уроком, а список группы
+   открыт в этой. Возвращаясь сюда, он должен увидеть свежий список, а не
+   тот, что был до отметки. Обновляем при возврате на вкладку — но только
+   если данные правда изменились и на экране не открыт диалог, иначе
+   перерисовка закрыла бы то, что человек в этот момент заполняет. */
+// Запоминаем состояние сразу, чтобы первый же возврат на вкладку не вызывал
+// перерисовку на пустом месте.
+let lastDbSeen = (() => { try { return localStorage.getItem('robo_school_db_v4'); } catch(e){ return null; } })();
+async function refreshOnReturn(){
+  if (S.screen === 'login' || S.modal) return;
+  if (Store.live){ await Store.load(); render(); return; }
+  let raw = null;
+  try { raw = localStorage.getItem('robo_school_db_v4'); } catch(e){}
+  if (!raw || raw === lastDbSeen) return;
+  lastDbSeen = raw;
+  try { Store.db = JSON.parse(raw); } catch(e){ return; }
+  render();
+}
+// Главный сигнал — событие storage: браузер сам сообщает этой вкладке, что
+// соседняя вкладка (урок) записала новые данные. Срабатывает сразу, даже
+// если преподаватель ещё не переключился обратно.
+window.addEventListener('storage', (e) => {
+  if (!e.key || e.key === 'robo_school_db_v4') refreshOnReturn();
+});
+// Подстраховка на случай, если событие не дошло: переключение вкладок
+// браузеры сообщают через visibilitychange, возврат из другого окна — focus.
+window.addEventListener('focus', refreshOnReturn);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshOnReturn();
+});
+
 function logout(){ try{localStorage.removeItem('robo_session');}catch(e){} S={screen:'login',role:null,teacherId:null,studentId:null,groupCode:null,tab:'groups',modal:null,err:''}; render(); }
 
 /* =====================================================================
@@ -835,6 +886,15 @@ function viewTeacher(){
     if (pr.status==='done') doneC++;
     if (pr.status==='stuck') stuckList.push({s, p, note:pr.note, at:pr.updated});
   }));
+  // Порядок застрявших — по проектам, а не по ученикам. Дорого не дойти до
+  // парты, дорого перезагрузить голову: «проект 04, зуммер, полярность» —
+  // это одна картина, и пока она в голове, преподаватель поможет всем, кто
+  // застрял на 04, почти не глядя в текст. А если после 04 сразу 10, урок
+  // приходится читать заново. Внутри проекта первым идёт тот, кто ждёт
+  // дольше. Даже когда у всех разные проекты, порядок по номеру — движение
+  // в одну сторону по книге, а не метание из конца в конец.
+  stuckList.sort((a,b) => (a.p.n - b.p.n) || String(a.at||'').localeCompare(String(b.at||'')));
+
   const avg = list.length ? (list.reduce((a,s)=>a+Store.doneCount(s.id),0)/list.length) : 0;
 
   /* --- Урок сегодня ----------------------------------------------------
@@ -892,7 +952,13 @@ function viewTeacher(){
     const box = it.lastElementChild;
     // Ученик застрял на конкретном проекте — преподавателю нужен именно он,
     // а не начало инструкции: листать оглавление при ученике неудобно.
-    const bg = $(`<a class="btn ghost sm" target="_blank" href="${CONFIG.GUIDE_URL}#proj-${p.n}">Урок</a>`);
+    // Помощь одному ученику — это работа с началом и концом, поэтому урок
+    // открывается в этой же вкладке, а не в новой: возврат «К группе» тогда
+    // ведёт назад, а не создаёт вторую копию кабинета рядом.
+    // В ссылке едут номер ученика и номер проекта — страница урока покажет
+    // внизу, кому преподаватель помогает, даст отметить результат и сразу
+    // предложит следующего застрявшего.
+    const bg = $(`<a class="btn ghost sm" href="${CONFIG.GUIDE_URL}?help=${s.id}&proj=${p.n}#proj-${p.n}">Урок</a>`);
     // «Проект работает» ставит проект в собранные, «Помог, доделает» только снимает
     // отметку «застрял». Названия должны говорить, что произойдёт: преподаватель
     // выбирает между ними на ходу, стоя у стола ученика.
@@ -1113,7 +1179,7 @@ function viewAdmin(){
         <td>${r.list.length}</td>
         <td style="min-width:220px">
           <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-family:var(--mono);font-size:13.5px;white-space:nowrap">${r.avg.toFixed(1)} / ${NPROJ}</span>
+            <span style="font-size:13.5px;white-space:nowrap;font-variant-numeric:tabular-nums">${r.avg.toFixed(1)} / ${NPROJ}</span>
             <div class="bar" style="flex:1"><i style="width:${pct}%"></i></div>
           </div>
         </td>

@@ -959,3 +959,65 @@ table.mx tbody tr.mx-grp th .s{ font-weight:500; font-size:13.5px; color:var(--i
 @media(max-width:820px){
   .stuck-item .proj::before{ content:none; }
 }
+
+/* ── Шрифт программиста — только там, где он по делу ───────────────────────
+   Моноширинный нужен для двух вещей: код, который читают по символу, и
+   короткие обозначения вроде кода группы ROBO-7A, которые диктуют вслух.
+   Всё остальное — обычный текст, и набирать его шрифтом из редактора кода
+   незачем: страница начинает выглядеть как панель разработчика, а не как
+   журнал учителя. Цифры при этом не разъезжаются — у Inter есть табличные
+   знаки, в колонку они встают так же ровно. */
+.stuck-item .badge,
+table.mx thead th, table.mx thead th a, table.mx tbody td, table.mx tbody th,
+table.list th, .section-head .sub, .stat .l, .field label, .chip, .legend,
+.pcard .num, .pcard .meta, .who, .brand small, .demo-flag, .big div{
+  font-family:var(--sans) !important;
+}
+table.mx thead th, table.mx tbody td, .stuck-item .badge, .pcard .num{
+  font-variant-numeric:tabular-nums !important;
+}
+/* Разрядка была нужна моноширинному, чтобы буквы не слипались.
+   Обычному шрифту она только мешает читать. */
+.demo-flag{ letter-spacing:0 !important; font-size:13px !important; }
+.chip, .legend, .pcard .meta{ letter-spacing:.02em !important; }
+table.mx thead th, table.mx tbody td{ letter-spacing:0 !important; }
+
+/* Страница урока. В книге моноширинным набраны не только листинги, но и
+   целые фразы — подписи разделов, правая колонка таблиц «если не работает»,
+   названия деталей. На бумаге это читалось как технический документ, на
+   экране — как машинный вывод. Возвращаем им обычный текст; листинги кода,
+   имена функций и обозначения выводов остаются моноширинными. */
+.lesson .part, .lesson .h-label, .lesson .q, .lesson .lang, .lesson .lib,
+.lesson .copy-btn, .lesson td.target, .lesson td.pin, .lesson th,
+.lesson .qty, .lesson .label, .lesson .cover-eyebrow, .lesson .locale-stamp,
+.lesson .row, .c-n{
+  font-family:var(--sans) !important;
+}
+.lesson td.target, .lesson td.pin, .lesson th, .lesson .part, .lesson .q{
+  letter-spacing:0 !important;
+}
+.lesson .qty, .c-n{ font-variant-numeric:tabular-nums !important; }
+/* Номера разделов в оглавлении и номера деталей в списке комплектующих —
+   это тоже просто числа, а не код. */
+.lesson .toc-row .n, .lesson .comp-head span{ font-family:var(--sans) !important;
+  font-variant-numeric:tabular-nums !important; letter-spacing:0 !important; }
+
+/* ── Подписи в уроках: слова, а не штампы ─────────────────────────────────
+   «ЧЕМУ НАУЧИШЬСЯ», «КОМПОНЕНТЫ», «ПРОБЛЕМА / РЕШЕНИЕ» были набраны
+   заглавными вразрядку. Слово человек узнаёт по форме целиком, а заглавные
+   вразрядку ломают форму и заставляют разбирать его по буквам — и вся
+   страница начинает выглядеть как подпись на приборной панели. Из кабинетов
+   мы это уже убрали, теперь и из уроков. Печатной книги правка не касается:
+   theme.css работает только на экране. */
+.lesson .h-label, .lesson .h-label.emph, .lesson .part, .lesson .lang,
+.lesson .copy-btn, .lesson th, .lesson .cover-eyebrow, .lesson .locale-stamp,
+.lesson .label{
+  text-transform:none !important;
+  letter-spacing:0 !important;
+}
+/* Раз это теперь заголовок, а не штамп, ему нужен вес и размер заголовка:
+   иначе строчными он потеряется в тексте, который стоит под ним. */
+.lesson .h-label{ font-size:12.4px !important; font-weight:600 !important;
+  color:var(--ink) !important; }
+.lesson .h-label.emph{ font-size:13.8px !important; }
+.lesson th{ font-size:11px !important; font-weight:600 !important; }
