@@ -202,10 +202,10 @@ body.hdr-away .c-top{ background:transparent !important;
 body.hdr-away .c-brand{ display:none !important; }
 body.hdr-away .c-rail-brand{ display:flex !important; align-items:center !important;
   position:sticky !important; top:0 !important; z-index:3 !important;
-  background:var(--navy) !important; padding:10px 24px 9px !important;
+  background:var(--navy) !important; padding:9px 18px 8px !important;
   border-bottom:1px solid rgba(255,255,255,.09) !important;
   border-radius:0 !important; }
-body.hdr-away .c-rail-brand img{ display:block !important; height:30px !important; width:auto !important; }
+body.hdr-away .c-rail-brand img{ display:block !important; height:25px !important; width:auto !important; }
 body.hdr-away .c-rail-brand:hover{ background:#14147A !important; }
 
 /* «Мои проекты» — плашка в углу, читаемая над светлым текстом */
@@ -237,9 +237,9 @@ body.hdr-away .c-top .c-btn:hover{ background:var(--paper-3) !important;
    если пустить полоску во всю ширину окна, её первые проценты идут по рельсе
    и не видны вообще. Числа повторяют ширину рельсы из шаблона-курса
    (320 / 340 / 350). Меняешь там ширину рельсы — поправь и здесь. */
-.c-prog{ left:320px; }
-@media(min-width:1400px){ .c-prog{ left:340px; } }
-@media(min-width:1700px){ .c-prog{ left:350px; } }
+.c-prog{ left:264px; }
+@media(min-width:1400px){ .c-prog{ left:276px; } }
+@media(min-width:1700px){ .c-prog{ left:286px; } }
 /* до 900px рельса уходит за край экрана — полоска снова во всю ширину */
 @media(max-width:900px){ .c-prog{ left:0; } }
 .c-prog > i{ display:block; height:100%; width:100%;
@@ -983,10 +983,22 @@ table.mx tbody tr.mx-grp th .s{ font-weight:500; font-size:13.5px; color:var(--i
   margin-top:30px !important; margin-bottom:10px !important; }
 
 /* --- левое меню: это список для выбора, а не текст для чтения --- */
-.c-item{ font-size:13.5px !important; padding:9px 22px !important; }
-.c-item .c-n{ font-size:11px !important; }
-@media(min-width:1400px){ .c-item{ font-size:14px !important; padding:9px 24px !important; } }
-@media(min-width:1700px){ .c-item{ font-size:14px !important; } }
+/* МЕНЮ УРОКОВ СЖАТО ЕЩЁ РАЗ (было 13.5-14px, отступы 9x22 и 9x24).
+
+   Это список для выбора, а не текст для чтения: сюда смотрят секунду,
+   чтобы ткнуть в нужный проект. Раньше 22 пункта не влезали в экран и
+   меню приходилось прокручивать отдельно от урока — а прокрутка внутри
+   прокрутки всегда сбивает. Теперь при высоте окна от 800 видны все 22.
+
+   Ширина самой рельсы (264 / 276 / 286) живёт в шаблоне-курса, там же
+   и предупреждение про связку с полоской прогресса. */
+.c-item{ font-size:12.5px !important; padding:7px 16px !important;
+  gap:8px !important; line-height:1.35 !important; }
+.c-item .c-n{ font-size:10px !important; flex:0 0 18px !important; }
+.c-item .c-ok{ font-size:12px !important; flex:0 0 13px !important; }
+@media(min-width:1400px){ .c-item{ font-size:12.5px !important; padding:7px 18px !important; } }
+@media(min-width:1700px){ .c-item{ font-size:13px !important; } }
+.c-rail-h{ font-size:10px !important; padding:14px 18px 7px !important; }
 
 /* На телефоне книжные двухколоночные блоки не схлопывались: при zoom 1
    они кое-как влезали, при 1.2 стали распирать страницу вбок. */

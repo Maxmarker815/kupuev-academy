@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="guide/styles.css">
-<link rel="stylesheet" href="theme.css?v=1788967767">
+<link rel="stylesheet" href="theme.css?v=1788969473">
 <style>
 /* =====================================================================
    Курс = уроки внутри платформы. Текст уроков взят из печатной книги
@@ -45,7 +45,7 @@ body.course .toc-rail,body.course .progress-rail{display:none!important}
 
 /* ---------- каркас ---------- */
 .c-shell{display:flex;align-items:flex-start;gap:0}
-.c-rail{position:sticky;top:var(--top-h);flex:0 0 320px;height:calc(100vh - var(--top-h));overflow-y:auto;
+.c-rail{position:sticky;top:var(--top-h);flex:0 0 264px;height:calc(100vh - var(--top-h));overflow-y:auto;
   border-right:1px solid rgba(255,255,255,.09);background:#040057;padding:22px 0 44px}
 .c-item{display:flex;align-items:baseline;gap:11px;padding:11px 22px;text-decoration:none;
   color:var(--ink-2);border-left:3px solid transparent;font-size:15px;line-height:1.35}
@@ -55,9 +55,12 @@ body.course .toc-rail,body.course .progress-rail{display:none!important}
 .c-item.on .c-n{color:var(--ink)}
 .c-t{flex:1}
 .c-ok{flex:0 0 16px;text-align:right;font-size:13.5px;color:var(--green);font-weight:700}
-@media(min-width:1400px){ .c-rail{flex:0 0 340px} .c-item{font-size:15px;padding:11px 24px}
+@media(min-width:1400px){ .c-rail{flex:0 0 276px} .c-item{font-size:15px;padding:11px 24px}
   .c-brand{font-size:37px} .c-brand small{font-size:12px} :root{--top-h:84px} }
-@media(min-width:1700px){ .c-rail{flex:0 0 350px} .c-item{font-size:17px} }
+@media(min-width:1700px){ .c-rail{flex:0 0 286px} .c-item{font-size:17px} }
+/* ШИРИНА РЕЛЬСЫ (264 / 276 / 286) задана только здесь. Меняешь её —
+   обязательно поправь и отступ полоски прогресса в theme.css: полоска
+   начинается там, где кончается рельса, и числа должны совпадать. */
 
 .c-main{flex:1;min-width:0;padding:30px 40px 100px;max-width:1180px;margin:0 auto}
 
