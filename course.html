@@ -46,7 +46,12 @@ body.course .toc-rail,body.course .progress-rail{display:none!important}
 /* ---------- каркас ---------- */
 .c-shell{display:flex;align-items:flex-start;gap:0}
 .c-rail{position:sticky;top:var(--top-h);flex:0 0 264px;height:calc(100vh - var(--top-h));overflow-y:auto;
-  border-right:1px solid rgba(255,255,255,.09);background:#040057;padding:22px 0 44px}
+  border-right:1px solid rgba(255,255,255,.09);background:#040057;padding:0 0 44px}
+/* Сверху у рельсы отступа НЕТ намеренно. Раньше стояло 22px, и первая
+   строчка списка («Знакомство с набором») читалась как более высокая, чем
+   все остальные: пункты-то одинаковые по 33px, но над первым висел этот
+   запас. Список должен начинаться сразу — тогда он читается одним блоком.
+   Снизу 44px оставлены, чтобы последний пункт не лип к краю окна. */
 .c-item{display:flex;align-items:baseline;gap:11px;padding:11px 22px;text-decoration:none;
   color:var(--ink-2);border-left:3px solid transparent;font-size:15px;line-height:1.35}
 .c-item:hover{background:var(--paper-3);color:var(--ink)}
