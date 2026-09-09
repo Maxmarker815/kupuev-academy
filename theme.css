@@ -1209,3 +1209,55 @@ table.mx tbody th, table.mx tbody td:last-child{ font-size:14px !important; }
   .hero .big{ font-size:34px !important; }
   .stat .v{ font-size:26px !important; }
 }
+
+/* ============ МИНУС ДЕСЯТАЯ ЧАСТЬ ПО ВСЕМУ ============
+
+   Максат впервые посмотрел платформу в настоящем масштабе — обоими
+   браузерами на честных 100%, замер подтвердил один к одному — и попросил
+   размер, который даёт масштаб 90%. То есть равномерное уменьшение всего
+   яруса на десятую часть, а не выборочное.
+
+   Сделано умножением каждой ступени на 0.9 с сохранением пропорций.
+   Спокойный текст стал 13.5 — это нижняя граница, дальше уже неудобно
+   читать подряд, и ниже я не пойду.
+
+   Страницы уроков не затронуты: там свой множитель, выверенный по длине
+   строки, и правило ограничено body:not(.course). */
+
+body:not(.course){ font-size:13.5px !important; }
+body:not(.course) .lede{ font-size:13.5px !important; }
+.section-head h2{ font-size:20px !important; }
+.section-head .sub{ font-size:12px !important; }
+.pcard h3{ font-size:14.5px !important; }
+.pcard .num{ font-size:11px !important; }
+.hero .big{ font-size:36px !important; }
+.hero .grow > div:first-child{ font-size:17px !important; }
+.stat .v{ font-size:27px !important; }
+.stat .v small{ font-size:12px !important; }
+.stat .l{ font-size:12px !important; }
+.login h1{ font-size:26px !important; }
+.login .lede{ font-size:13.5px !important; }
+.role b{ font-size:14px !important; }
+.login-bg-cap .n{ font-size:27px !important; }
+.login-bg-cap .t{ font-size:13.5px !important; }
+.stuck-item .nm-row .nm, .stuck-item .nm{ font-size:13.5px !important; }
+.stuck-item .proj{ font-size:12px !important; }
+.stuck-item .qt{ font-size:12.5px !important; }
+.stuck-item .when{ font-size:12px !important; }
+.stuck-item .badge{ width:31px !important; height:31px !important; font-size:11.5px !important; }
+.btn, .mark, .topbar .btn, #lopen, .btn.primary, .stuck-item .btn.sm{ font-size:12.5px !important; }
+.gsw button, .gsw select{ font-size:12px !important; }
+table.list th, table.list td{ font-size:12px !important; }
+table.mx tbody th, table.mx tbody td:last-child{ font-size:13px !important; }
+.cardh{ font-size:13.5px !important; }
+.topbar .who{ font-size:12px !important; }
+.topbar .who b{ font-size:13.5px !important; }
+.empty .t{ font-size:14.5px !important; }
+.demo-flag{ font-size:10.5px !important; }
+.legend, .chip{ font-size:11px !important; }
+
+@media(max-width:1024px){
+  .section-head h2{ font-size:18px !important; }
+  .hero .big{ font-size:30px !important; }
+  .stat .v{ font-size:23px !important; }
+}
