@@ -117,7 +117,7 @@ table.list td, table.list th, table.mx td, table.mx th{ font-variant-numeric:tab
 .topbar .brand{ font-size:31px !important; }
 /* Шапка выровнена с содержимым страницы: у .wrap отступ 20px, значит и здесь 20,
    иначе название школы стоит на 10 пикселей правее слова «Группа» под ним. */
-.topbar-in{ padding:0 20px !important; min-height:108px !important; max-width:1560px !important; }
+.topbar-in{ padding:0 32px !important; min-height:78px !important; max-width:none !important; }
 
 /* Рабочая область шире — на широком мониторе не оставалось половины экрана
    пустой. Карточки проектов крупнее, а не просто расставлены гуще. */
@@ -130,7 +130,7 @@ table.list td, table.list th, table.mx td, table.mx th{ font-variant-numeric:tab
 .pcard .acts .btn{ font-size:13.5px !important; padding:7px 13px !important; }
 .hero{ padding:30px 32px !important; }
 .hero .big{ font-size:64px !important; }
-@media(min-width:1400px){ .topbar-in{ min-height:118px !important; } }
+@media(min-width:1400px){ .topbar-in{ min-height:84px !important; } }
 @media(min-width:1400px){ .topbar .brand{ font-size:37px !important; } }
 .topbar .who{ color:#A6ADDE !important; }
 .topbar .who b{ color:#FFFFFF !important; }
@@ -350,8 +350,8 @@ table.list td, table.list th, table.mx td, table.mx th{ font-variant-numeric:tab
   display:flex; align-items:flex-end; }
 /* Подпись сдвинута в плотную часть панели, но не в самый угол */
 .login-bg-cap{ margin-left:auto; padding:0 7vw 9vh 0; color:#FFF; }
-.login-bg-cap .n{ font-family:'Instrument Serif',Georgia,serif; font-size:96px; line-height:1;
-  color:#FFF; margin-bottom:10px; }
+.login-bg-cap .n{ font-family:'Instrument Serif',Georgia,serif; font-size:46px; line-height:1.12;
+  color:#FFF; margin-bottom:14px; }
 .login-bg-cap .t{ font-size:19px; line-height:1.5; color:#C6D0EE; max-width:26ch; }
 .login{ position:relative; z-index:1; }
 /* Название школы — в левом верхнем углу страницы, как логотип, а не внутри
@@ -525,7 +525,7 @@ table.list td{ border-bottom:1px solid var(--rule) !important; }
   /* ---- кабинеты ---- */
   /* 64px было рассчитано на текстовое название. Полный знак со слоганом
      выше — в диапазоне 761–820px он упирался в края шапки. */
-  .topbar-in{ min-height:100px !important; padding:12px 16px !important; }
+  .topbar-in{ min-height:72px !important; padding:10px 20px !important; }
   .topbar .brand{ font-size:22px !important; }
   .topbar .who{ font-size:12px !important; }
   .topbar .who b{ font-size:13.5px !important; }
@@ -779,11 +779,11 @@ table.mx tbody tr.mx-grp th .s{ font-weight:500; font-size:13.5px; color:var(--i
 /* Компоновка: здание, под ним KUPUEV / ACADEMY, справа через разделитель —
    слоган в две строки. Слоган разбит на две строки не для красоты: одной
    строкой он вдвое длиннее и при той же ширине буквы вдвое мельче. */
-.topbar .brand img, .c-brand img{ display:block; height:76px; width:auto; }
-.login-brand img{ display:block; height:80px; width:auto; }
+.topbar .brand img, .c-brand img{ display:block; height:54px; width:auto; }
+.login-brand img{ display:block; height:56px; width:auto; }
 @media(min-width:1400px){
-  .topbar .brand img, .c-brand img{ height:84px; }
-  .login-brand img{ height:88px; }
+  .topbar .brand img, .c-brand img{ height:58px; }
+  .login-brand img{ height:62px; }
 }
 /* Ниже 760px слоган не помещается в строку рядом с названием. Остаётся
    компактный блок «здание + KUPUEV ACADEMY» — он узкий и всё ещё называет школу. */
@@ -791,13 +791,13 @@ table.mx tbody tr.mx-grp th .s{ font-weight:500; font-size:13.5px; color:var(--i
 @media(max-width:760px){
   .lg-wide{ display:none !important; }
   .lg-mark{ display:block !important; }
-  .topbar .brand img, .c-brand img{ height:46px; }
-  .login-brand img{ height:48px; }
+  .topbar .brand img, .c-brand img{ height:40px; }
+  .login-brand img{ height:42px; }
 }
 
 /* Ниже 760px в шапке только знак 36px — там компактная высота снова уместна. */
 @media(max-width:760px){
-  .topbar-in{ min-height:70px !important; padding:10px 16px !important; }
+  .topbar-in{ min-height:62px !important; padding:8px 16px !important; }
 }
 
 
@@ -993,7 +993,7 @@ table.mx thead th, table.mx tbody td, .stuck-item .badge, .pcard .num{
 }
 /* Разрядка была нужна моноширинному, чтобы буквы не слипались.
    Обычному шрифту она только мешает читать. */
-.demo-flag{ letter-spacing:0 !important; font-size:13px !important; }
+.demo-flag{ letter-spacing:0 !important; font-size:11.5px !important; padding:5px 20px !important; }
 .chip, .legend, .pcard .meta{ letter-spacing:.02em !important; }
 table.mx thead th, table.mx tbody td{ letter-spacing:0 !important; }
 
@@ -1076,4 +1076,28 @@ table.mx thead th, table.mx tbody td{ letter-spacing:0 !important; }
   /* На телефоне переключатель уходит под заголовок и прокручивается вбок
      внутри себя, если групп много. Страницу вбок он при этом не тянет. */
   .gsw{ margin-left:0; margin-top:10px; }
+}
+
+/* Шапка тянется во всю ширину окна, а содержимое страницы остаётся в колонке
+   1560px. Логотип и кнопка выхода прижаты к краям экрана, а не к краям текста:
+   так шапка работает рамкой страницы и на широком мониторе не выглядит
+   зажатой в середине. Высота снижена с 118 до 84 (и с 108 до 78), знак с 84
+   до 58 — по просьбе директора: минимально, тихо, меньше шума. Экран и так
+   невысокий, а сверху ещё служебная полоса демо-режима. */
+
+/* Урок на окне 900-1140 пикселей уезжал вбок примерно на 25 пикселей.
+   Причина в том, что страница урока — это вёрстка печатного листа А4,
+   увеличенная множителем zoom. Слева стоит колонка меню шириной 320,
+   и в этом промежутке ширин увеличенному листу уже не хватает места,
+   а меню ещё не сворачивается в кнопку — оно уходит в кнопку только
+   ниже 900. Правится уменьшением множителя ровно в этом промежутке:
+   текст чуть мельче, зато страница не ползёт вбок.
+   Проверено на проектах 01, 07 и 16 при ширинах 901-1200. */
+@media(min-width:901px) and (max-width:1010px){
+  .lesson{ zoom:0.98 !important; }
+  .c-main{ padding-left:18px !important; padding-right:18px !important; }
+}
+@media(min-width:1011px) and (max-width:1140px){
+  .lesson{ zoom:1.06 !important; }
+  .c-main{ padding-left:24px !important; padding-right:24px !important; }
 }
