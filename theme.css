@@ -1306,3 +1306,54 @@ table.mx{ width:auto !important; min-width:0 !important; }
 .scrollx:has(table.mx){ display:inline-block; max-width:100%; vertical-align:top; }
 table.mx tbody th{ line-height:1.25 !important; max-width:300px !important; }
 table.mx tbody tr.mx-grp th{ white-space:normal !important; }
+
+/* ============ КАРТОЧКИ ПРОЕКТОВ: ТИШЕ И ПЛОТНЕЕ ============
+
+   Было не минималистично, и дело не в кегле. Каждая карточка несла две
+   кнопки во всю ширину, одна из которых — сплошная зелёная заливка. На
+   экране это давало восемь ярких полос подряд: глазу не за что зацепиться,
+   потому что кричит всё сразу. Плюс собранный проект помечался трижды —
+   цветом рамки, цветом фона карточки и заливкой кнопки.
+
+   Стало: одна отметка на один смысл. Карточка всегда белая, «собрал» —
+   тихая зелёная галочка с рамкой, а не залитая полоса. Красный фон оставлен
+   только у «застрял»: это единственное состояние, которое должно догонять
+   взглядом само.
+
+   Карточки уже: на широком экране их помещается шесть в ряд вместо четырёх,
+   и весь курс виден без прокрутки. «Не получается» стало тихой кнопкой —
+   ей пользуются редко, а место она занимала как главной. */
+
+.proj-grid{ grid-template-columns:repeat(auto-fill,minmax(212px,1fr)) !important;
+            gap:11px !important; }
+.pcard{ padding:11px 12px 12px !important; gap:7px !important; }
+.pcard h3{ font-size:13.5px !important; line-height:1.3 !important; font-weight:600 !important; }
+.pcard .num{ font-size:10px !important; }
+
+/* фон карточки — белый; тревога остаётся заметной */
+.pcard.done{ background:#FFF !important; border-color:var(--rule) !important; }
+.pcard.doing{ background:#FFF !important; border-color:var(--rule) !important; }
+.pcard.stuck{ background:var(--signal-tint) !important; border-color:var(--signal) !important; }
+
+/* «Собрал» — компактная отметка, а не полоса во всю карточку */
+.pcard .mark{ width:auto !important; align-self:flex-start !important;
+  padding:4px 10px !important; font-size:11.5px !important; gap:7px !important; }
+.pcard .mark .box{ width:14px !important; height:14px !important; }
+.pcard .mark.on{ background:transparent !important; border-color:var(--green) !important;
+  color:var(--green-dark) !important; font-weight:600 !important; }
+.pcard .mark.on .box{ background:var(--green) !important; border-color:var(--green) !important;
+  color:#FFF !important; }
+
+/* «Не получается» — второстепенное действие */
+.pcard .acts .btn{ font-size:11px !important; padding:3px 9px !important;
+  color:var(--ink-3) !important; border-color:var(--rule) !important; }
+.pcard .acts .btn:hover{ color:var(--ink) !important; border-color:var(--rule-strong) !important; }
+
+/* метка «Следующий» — обычными буквами, без разрядки */
+.chip{ text-transform:none !important; letter-spacing:0 !important;
+  font-size:10.5px !important; padding:2px 8px !important; }
+.pcard .note{ font-size:11.5px !important; padding:6px 9px !important; }
+
+@media(max-width:1024px){
+  .proj-grid{ grid-template-columns:repeat(auto-fill,minmax(180px,1fr)) !important; }
+}
