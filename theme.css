@@ -1141,3 +1141,37 @@ table.mx thead th, table.mx tbody td{ letter-spacing:0 !important; }
   .hero .big{ font-size:38px !important; }
   .stat .v{ font-size:29px !important; }
 }
+
+/* ---- второй проход по кеглю: то, что осталось громким ----
+   Первый проход накрыл кабинет ученика и дашборд, а экран преподавателя
+   жил своими размерами и остался прежним — отсюда «не вижу разницы».
+   Здесь добиты остатки: имена в списке помощи, цитаты, кнопки, ячейки
+   матрицы, счётчики. Ориентир тот же: спокойный текст 15 не трогаем,
+   громкий ярус приводим к 13.5-16. */
+.stuck-item .nm-row .nm{ font-size:15.5px !important; }
+.stuck-item .nm{ font-size:15.5px !important; }
+.stuck-item .proj{ font-size:13.5px !important; }
+.stuck-item .qt{ font-size:14px !important; padding:9px 13px !important; }
+.stuck-item .muted{ font-size:13.5px !important; }
+.stuck-item .badge{ width:34px !important; height:34px !important; font-size:13px !important; }
+#lopen{ font-size:14px !important; padding:10px 19px !important; }
+.btn.primary{ font-size:14px !important; }
+.topbar .who b{ font-size:15px !important; }
+.section-head h2 .cnt{ font-size:13px !important; min-width:26px !important; height:26px !important; }
+table.mx tbody th{ font-size:15px !important; }
+table.mx tbody td:last-child{ font-size:15px !important; }
+.cardh{ font-size:16px !important; }
+.empty .t{ font-size:16px !important; }
+
+/* ---- светлая полоса внизу экрана входа ----
+   Синяя панель с фотографией была прибита к окну (position:fixed) и
+   закрывала ровно видимую часть. Если страница оказывалась хоть немного
+   длиннее окна, ниже оставалась незакрашенная полоса цвета фона — и на
+   снимке всей страницы, и живьём при короткой прокрутке. Теперь панель
+   привязана не к окну, а ко всей странице: где бы та ни кончалась,
+   панель кончается вместе с ней. */
+#app:has(.login-bg){ position:relative; min-height:100vh; display:flow-root; }
+#app:has(.login-bg) .login-bg{ position:absolute !important; }
+/* display:flow-root — чтобы нижний отступ блока входа не «вытекал» наружу.
+   Из-за него страница считалась на три десятка пикселей длиннее, чем есть,
+   и панель, доходя до конца страницы, всё равно не закрывала этот хвост. */
