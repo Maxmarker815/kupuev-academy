@@ -363,7 +363,13 @@ table.list td, table.list th, table.mx td, table.mx th{ font-variant-numeric:tab
 }
 /* Блок входа ближе к середине экрана — меньше вести мышь от центра */
 @media(min-width:1100px){ .login{ margin-left:max(6vw, calc(50vw - 520px)) !important;
-  margin-right:auto !important; margin-top:18vh !important; } }
+  margin-right:auto !important;
+  /* Отступ сверху был 18vh, и на невысоком окне (ноутбук, где вдобавок
+     сверху служебная полоса) вся страница входа переставала помещаться —
+     появлялась прокрутка на два-три десятка пикселей ни за чем. Теперь
+     отступ ограничен сверху: на высоком экране он почти прежний, на
+     низком уменьшается, и страница помещается целиком. */
+  margin-top:clamp(40px, 13vh, 150px) !important; } }
 @media(max-width:900px){ .login-bg{ display:none; } }
 
 .role{ border:1px solid var(--rule) !important; background:#FFF !important;
