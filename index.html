@@ -184,7 +184,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1788945188">
+<link rel="stylesheet" href="theme.css?v=1788946643">
 </head>
 <body>
 
@@ -500,6 +500,13 @@ const gShort = (g) => {
   if (!g) return '—';
   const parts = String(g.name).split('·').map(s => s.trim()).filter(Boolean);
   return parts.length > 1 ? parts[1] : parts[0];
+};
+
+// Короткое имя группы для узких мест: «Робототехника · 5Б · сб 11:00» -> «5Б».
+// Если имя без разделителей — берём код группы, он всегда есть.
+const shortGroup = (g) => {
+  const p = String(g.name || '').split('·');
+  return ((p[1] || '').trim()) || g.code || '';
 };
 
 // «1 день / 2 дня / 5 дней» — иначе в отчёте будет «5 день»
@@ -1259,7 +1266,25 @@ function viewAdmin(){
      У преподавателя такая таблица есть по его группе. Директору нужна та же
      картина, но по всем группам сразу: где кто стоит, кто застрял, и как
      группы выглядят рядом друг с другом на одних и тех же столбцах. */
-  el.appendChild($(`<div class="section-head"><h2>${scope ? 'Ученики группы по проектам' : 'Все ученики по проектам'}</h2></div>`));
+  /* Переключатель групп стоит прямо у таблицы: она в самом низу страницы,
+     и возвращаться к селектору наверху ради смены группы — лишний путь.
+     Состояние то же самое (S.adminGroup), поэтому числа и графики выше
+     меняются вместе с таблицей. Двух разных «выбранных групп» на одном
+     экране быть не должно — директор перестал бы понимать, к чему относится
+     цифра, на которую он смотрит. */
+  const headA = $(`<div class="section-head has-sw"><h2>${scope ? 'Ученики группы по проектам' : 'Все ученики по проектам'}</h2></div>`);
+  if (db.groups.length > 1){
+    const sw = $(`<div class="gsw"></div>`);
+    const mkSw = (label, code, full) => {
+      const b = $(`<button type="button" class="${code === scope ? 'on' : ''}" title="${esc(full)}">${esc(label)}</button>`);
+      b.onclick = () => { S.adminGroup = code; save(); render(); };
+      return b;
+    };
+    sw.appendChild(mkSw('Вся школа', null, 'Все группы школы'));
+    db.groups.forEach(g => sw.appendChild(mkSw(shortGroup(g), g.code, g.name)));
+    headA.appendChild(sw);
+  }
+  el.appendChild(headA);
   const wrapA = $(`<div class="scrollx"></div>`);
   const tblA = $(`<table class="mx">
     <thead><tr><th style="text-align:left;padding-left:12px">Ученик</th>${PROJECTS.map(p=>`<th title="${esc(p.t)} — открыть урок"><a class="mxh" target="_blank" href="${CONFIG.GUIDE_URL}#proj-${p.n}">${String(p.n).padStart(2,'0')}</a></th>`).join('')}<th>Итого</th></tr></thead>

@@ -1027,3 +1027,20 @@ table.mx thead th, table.mx tbody td{ letter-spacing:0 !important; }
 .name-list button .sub{display:block;font-family:var(--mono);font-size:11px;
   letter-spacing:.08em;color:var(--ink-3);margin-top:5px}
 .name-list button:hover .sub{color:var(--ink-2)}
+
+/* Переключатель групп у таблицы «Ученики по проектам».
+   Тот же фильтр, что и селектор наверху, — просто под рукой у самой таблицы.
+   Цветом помечена только выбранная группа, и это тёмно-синий «действие»,
+   а не смысловой цвет статуса. */
+.section-head.has-sw{ flex-wrap:wrap; }
+.gsw{ margin-left:auto; align-self:center; display:flex; gap:6px; flex-wrap:wrap; }
+.gsw button{ border:1px solid var(--rule-strong); background:var(--paper-2); color:var(--ink-2);
+  padding:6px 13px; border-radius:var(--r-sm); font-family:var(--sans); font-size:13.5px;
+  line-height:1.2; cursor:pointer; transition:.12s; }
+.gsw button:hover{ border-color:var(--navy); color:var(--ink); }
+.gsw button.on{ background:var(--navy); border-color:var(--navy); color:#FFF; font-weight:600; }
+@media(max-width:640px){
+  /* На телефоне ряд кнопок встаёт под заголовок во всю ширину, а не жмётся справа. */
+  .gsw{ margin-left:0; width:100%; }
+  .gsw button{ flex:1 1 auto; text-align:center; }
+}
