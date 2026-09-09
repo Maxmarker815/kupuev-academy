@@ -913,14 +913,29 @@ function viewTeacher(){
   </div></div>`)); const w=document.createElement('div'); w.appendChild(el); return w; }
   if (!groups.some(g => g.code === S.groupCode)) S.groupCode = groups[0].code;
 
-  const sel = $(`<div class="section-head">
-    <h2>Группа</h2>
-    <select id="gsel" style="border:1.5px solid var(--rule-strong);background:var(--paper);padding:7px 10px;border-radius:2px">
-      ${groups.map(g => `<option value="${esc(g.code)}" ${g.code===S.groupCode?'selected':''}>${esc(g.name)} · ${esc(g.code)}</option>`).join('')}
-    </select>
-    <span class="spacer" style="flex:1"></span>
-  </div>`);
-  sel.querySelector('#gsel').onchange = e => { S.groupCode = e.target.value; render(); };
+  /* Выбор группы — тот же переключатель, что у директора: до шести групп ряд
+     кнопок, дальше выпадающий список. У преподавателя обычно одна-две группы,
+     так что почти всегда это кнопки, и переключение стоит один клик вместо
+     двух. Если группа всего одна, переключателя нет вовсе: выбирать не из
+     чего, и кнопка-одиночка только сбивала бы с толку. */
+  const gCur = Store.group(S.groupCode);
+  const sel = $(`<div class="section-head has-sw"><h2>Группа</h2>${
+    groups.length === 1 && gCur ? `<span class="sub">${esc(gCur.name)}</span>` : ''}</div>`);
+  if (groups.length > 1){
+    const box = $(`<div class="gsw"></div>`);
+    if (groups.length > 6){
+      const s2 = $(`<select>${groups.map(g => `<option value="${esc(g.code)}"${g.code===S.groupCode?' selected':''}>${esc(g.name)}</option>`).join('')}</select>`);
+      s2.onchange = e => { S.groupCode = e.target.value; save(); render(); };
+      box.appendChild(s2);
+    } else {
+      groups.forEach(g => {
+        const b = $(`<button type="button" class="${g.code===S.groupCode?'on':''}" title="${esc(g.name)}">${esc(shortGroup(g))}</button>`);
+        b.onclick = () => { S.groupCode = g.code; save(); render(); };
+        box.appendChild(b);
+      });
+    }
+    sel.appendChild(box);
+  }
   el.appendChild(sel);
 
   const list = Store.studentsOf(S.groupCode);
