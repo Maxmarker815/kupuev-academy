@@ -1028,27 +1028,37 @@ table.mx thead th, table.mx tbody td{ letter-spacing:0 !important; }
   letter-spacing:.08em;color:var(--ink-3);margin-top:5px}
 .name-list button:hover .sub{color:var(--ink-2)}
 
-/* Переключатель групп у таблицы «Ученики по проектам».
-   Тот же фильтр, что и селектор наверху, — просто под рукой у самой таблицы.
-   Цветом помечена только выбранная группа, и это тёмно-синий «действие»,
-   а не смысловой цвет статуса. */
-.section-head.has-sw{ flex-wrap:wrap; }
-.gsw{ margin-left:auto; align-self:center; display:flex; gap:6px; flex-wrap:wrap; }
-.gsw button{ border:1px solid var(--rule-strong); background:var(--paper-2); color:var(--ink-2);
-  padding:6px 13px; border-radius:var(--r-sm); font-family:var(--sans); font-size:13.5px;
-  line-height:1.2; cursor:pointer; transition:.12s; }
-.gsw button:hover{ border-color:var(--navy); color:var(--ink); }
-.gsw button.on{ background:var(--navy); border-color:var(--navy); color:#FFF; font-weight:600; }
-@media(max-width:640px){
-  /* На телефоне ряд кнопок встаёт под заголовок во всю ширину, а не жмётся справа. */
-  .gsw{ margin-left:0; width:100%; }
-  .gsw button{ flex:1 1 auto; text-align:center; }
-}
+/* Переключатель групп — одна деталь, стоящая вплотную к заголовку, которому
+   она принадлежит. Раньше кнопки были прижаты к правому краю: между словом
+   и выбором лежала пустая полоса во весь экран, и глаз их не связывал.
 
-/* Выпадающий список внутри переключателя — на случай школы, где групп больше
-   шести и ряд кнопок перестаёт помещаться. Вид тот же, что у кнопок. */
+   Кнопки соединены в один блок с общей рамкой, а не рассыпаны отдельными
+   таблетками: это один выбор из нескольких, и выглядеть он должен как одна
+   вещь. Цветом залита только выбранная — тёмно-синий здесь «выбрано», а не
+   смысловой цвет статуса. */
+.section-head.has-sw{ flex-wrap:wrap; }
+.gsw{ align-self:center; margin-left:18px; display:inline-flex; max-width:100%;
+  overflow-x:auto; border:1px solid var(--rule-strong); border-radius:var(--r-sm);
+  background:var(--paper-2); }
+.gsw button{ flex:none; border:0; border-left:1px solid var(--rule); background:transparent;
+  color:var(--ink-2); padding:8px 15px; font-family:var(--sans); font-size:13.5px;
+  line-height:1.2; white-space:nowrap; cursor:pointer; transition:.12s; }
+.gsw button:first-child{ border-left:0; }
+.gsw button:hover{ background:var(--paper-3); color:var(--ink); }
+.gsw button.on{ background:var(--navy); color:#FFF; font-weight:600; }
+.gsw button.on + button{ border-left-color:var(--navy); }
+
+/* Выпадающий список — на случай школы, где групп больше шести и ряд кнопок
+   в строку уже не помещается. */
+.gsw:has(select){ border:0; background:transparent; overflow:visible; }
 .gsw select{ border:1px solid var(--rule-strong); background:var(--paper-2); color:var(--ink);
-  padding:7px 13px; border-radius:var(--r-sm); font-family:var(--sans); font-size:13.5px;
+  padding:8px 13px; border-radius:var(--r-sm); font-family:var(--sans); font-size:13.5px;
   line-height:1.2; cursor:pointer; }
 .gsw select:hover{ border-color:var(--navy); }
 .gsw select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,.14); outline:0; }
+
+@media(max-width:640px){
+  /* На телефоне переключатель уходит под заголовок и прокручивается вбок
+     внутри себя, если групп много. Страницу вбок он при этом не тянет. */
+  .gsw{ margin-left:0; margin-top:10px; }
+}

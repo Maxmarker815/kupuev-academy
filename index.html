@@ -184,7 +184,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1788947010">
+<link rel="stylesheet" href="theme.css?v=1788947715">
 </head>
 <body>
 
@@ -1304,8 +1304,7 @@ function viewAdmin(){
      словами, какими платформа описывает кабинет преподавателя («вижу всю
      группу: кто где, кто застрял и на чём»). Заголовок больше не меняется
      при смене группы: что выбрано, и так видно по кнопкам справа. */
-  const headA = $(`<div class="section-head has-sw"><h2>Кто где</h2>
-    <span class="sub">каждый ученик и его проекты</span></div>`);
+  const headA = $(`<div class="section-head has-sw"><h2>Кто где</h2></div>`);
   if (db.groups.length) headA.appendChild(groupSwitch());
   el.appendChild(headA);
   const wrapA = $(`<div class="scrollx"></div>`);
