@@ -1385,7 +1385,7 @@ table.mx tbody tr.mx-grp th{ white-space:normal !important; }
    Не убирать. */
 
 .pcard .acts{ display:flex !important; align-items:center !important;
-  gap:17px !important; flex-wrap:wrap !important; margin-top:1px !important; }
+  gap:15px !important; flex-wrap:wrap !important; margin-top:1px !important; }
 
 .pcard .acts .btn,
 .pcard .acts .mark{
@@ -1421,7 +1421,7 @@ table.mx tbody tr.mx-grp th{ white-space:normal !important; }
 .pcard .acts .mark .box{
   transition:color .13s ease, border-color .13s ease,
              background-color .13s ease, opacity .13s ease,
-             transform .13s ease !important; }
+             transform .22s cubic-bezier(.34,1.5,.64,1) !important; }
 
 .pcard .acts .btn:hover,
 .pcard .acts .mark:hover{ background:transparent !important;
@@ -1442,18 +1442,47 @@ table.mx tbody tr.mx-grp th{ white-space:normal !important; }
    «почему буквы мутные».
 
    transform-origin слева, чтобы левый край и квадратик-галочка стояли
-   на месте, а надпись росла только вправо. Промежуток в .acts поднят
-   с 14 до 17px: на росте два действия иначе почти касаются. */
+   на месте, а надпись росла только вправо.
+
+   ГЛАВНОЕ ПРО ВЕЛИЧИНУ РОСТА — расти должна не надпись, а квадратик.
+
+   История, чтобы не ходить по кругу. Сначала надпись росла на 7% —
+   Максат сказал «сильно прям». Опустили до 4% — стало почти незаметно.
+   Искать размер между ними бессмысленно, и вот почему: у текста в
+   11.5px 4% дают меньше половины пикселя, а 7% уже начинают косить
+   строку и мутить буквы. Окна между «незаметно» и «слишком» просто нет.
+
+   Пробовали взять заметность перелётом (надпись выскакивает за размер
+   и садится обратно) — не работает: перелёт пропорционален самому
+   росту, замер показал всего 1.054 на пике против 1.05 в конце. Это
+   ноль на глаз.
+
+   Что работает: квадратик-галочка. Он сплошная фигура 14px, и те же
+   проценты дают ему прирост в целые пиксели — видно с одного взгляда.
+   Плюс фигуры при растяжении не мутнеют, в отличие от букв: у квадрата
+   нет мелких деталей, которые размывает.
+
+   Поэтому надпись растёт скромно (1.04, почти незаметно и не косит
+   строку), а квадратик прыгает отчётливо (1.28 сверху, то есть около
+   1.33 вместе с ростом надписи). Переход с лёгким перелётом — на
+   сплошной фигуре его как раз видно.
+
+   Если попросят «ещё заметнее» — крутить масштаб КВАДРАТИКА, не текста.
+   Масштаб текста трогать последним.
+
+   Промежуток в .acts 15px: на росте между двумя действиями остаётся 12. */
 .pcard .acts .btn,
 .pcard .acts .mark{ transform-origin:left center !important; }
 .pcard .acts .btn:hover,
-.pcard .acts .mark:hover{ transform:scale(1.07) !important; }
+.pcard .acts .mark:hover{ transform:scale(1.04) !important; }
+.pcard .acts .mark:hover .box{ transform:scale(1.28) !important; }
 
 /* Кому система велела не анимировать — тому без роста. Цвет остаётся:
    он несёт смысл (что случится от нажатия), а рост — только украшение. */
 @media (prefers-reduced-motion: reduce){
   .pcard .acts .btn:hover,
-  .pcard .acts .mark:hover{ transform:none !important; }
+  .pcard .acts .mark:hover,
+  .pcard .acts .mark:hover .box{ transform:none !important; }
 }
 
 /* «Собрал»: сама кнопка без рамки, но КВАДРАТИК-ГАЛОЧКА остаётся — иначе
