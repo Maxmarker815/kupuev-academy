@@ -1101,3 +1101,37 @@ table.mx thead th, table.mx tbody td{ letter-spacing:0 !important; }
   .lesson{ zoom:1.06 !important; }
   .c-main{ padding-left:24px !important; padding-right:24px !important; }
 }
+
+/* ============ ТИШЕ: единая шкала кегля для платформы ============
+
+   Замер показал, что громкий ярус набран примерно на четверть крупнее,
+   чем принято в рабочих инструментах: заголовок раздела 31, название
+   проекта 22, число в синем блоке 64, число на дашборде 46. Отсюда
+   ощущение, что «всё увеличено»: экран кричит там, где должен спокойно
+   показывать данные.
+
+   Спокойный текст — 15 пикселей — не трогаю: его читают дети, и он в норме.
+   Уменьшен только громкий ярус, примерно на пятую часть. Пропорции между
+   ступенями сохранены, поэтому иерархия не поехала: заголовок по-прежнему
+   заметно крупнее названия карточки, а число — крупнее всего.
+
+   Страницы уроков этой шкалы не касаются: там свой множитель, выверенный
+   отдельно по длине строки. */
+
+.section-head h2{ font-size:25px !important; }
+.pcard h3{ font-size:17.5px !important; line-height:1.3 !important; }
+.hero .big{ font-size:46px !important; }
+.hero .grow > div:first-child{ font-size:21px !important; }
+.stat .v{ font-size:34px !important; }
+.stat .v small{ font-size:13.5px !important; }
+.stat .l{ font-size:13.5px !important; }
+.mark{ font-size:14px !important; }
+.btn{ font-size:14px !important; }
+.topbar .btn{ font-size:14px !important; padding:9px 18px !important; }
+.stuck-item .btn.sm{ font-size:14px !important; }
+
+@media(max-width:1024px){
+  .section-head h2{ font-size:22px !important; }
+  .hero .big{ font-size:38px !important; }
+  .stat .v{ font-size:29px !important; }
+}
