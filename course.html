@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="guide/styles.css">
-<link rel="stylesheet" href="theme.css?v=1788962747">
+<link rel="stylesheet" href="theme.css?v=1788967767">
 <style>
 /* =====================================================================
    Курс = уроки внутри платформы. Текст уроков взят из печатной книги
@@ -144,6 +144,13 @@ body.helping .c-main{padding-bottom:150px}
 <body class="course">
 
 <a class="skiplink" href="#main">Перейти к уроку</a>
+
+<!-- Полоска прогресса чтения урока. Три пикселя по самому верху окна:
+     заполняется слева направо по мере прокрутки. Один урок — это около
+     15 экранов, и без неё непонятно, ты в начале или почти закончил.
+     Стили — в theme.css, поведение — в скрипте внизу страницы. -->
+<div class="c-prog" aria-hidden="true"><i></i></div>
+
 <div class="c-top"><div class="c-top-in">
   <button class="c-btn c-burger" id="burger">☰</button>
   <a class="c-brand" href="index.html" title="KUPUEV ACADEMY"><img class="lg-wide" src="logo.svg" alt="KUPUEV ACADEMY"><img class="lg-mark" src="logo-block.svg" alt=""></a>
@@ -153,6 +160,15 @@ body.helping .c-main{padding-bottom:150px}
 
 <div class="c-shell">
   <nav class="c-rail" id="rail">
+    <!-- Уменьшенный логотип для состояния, когда шапка уехала. Живёт ВНУТРИ
+         рельсы и приколот к её верху: рельса тёмная, значит своей подложки
+         знаку не нужно, а список уроков уезжает под него при прокрутке и
+         не налезает. Виден только при body.hdr-away (см. theme.css), и в
+         этот момент большой логотип в шапке скрыт — то есть на странице
+         всегда ровно один знак, а не два. Он же остаётся выходом со
+         страницы для преподавателя: кнопку «Мои проекты» скрипт ниже
+         убирает всем, кроме ученика. -->
+    <a class="c-rail-brand" href="index.html" title="KUPUEV ACADEMY"><img src="logo-block.svg" alt="KUPUEV ACADEMY"></a>
     <a class="c-item" data-k="part-1" href="#part-1"><span class="c-n">·</span><span class="c-t">Знакомство с набором</span><span class="c-ok"></span></a>
 <a class="c-item" data-k="part-2" href="#part-2"><span class="c-n">·</span><span class="c-t">Быстрый старт</span><span class="c-ok"></span></a>
 <a class="c-item" data-k="part-3" href="#part-3"><span class="c-n">·</span><span class="c-t">Основы электроники</span><span class="c-ok"></span></a>
@@ -1465,6 +1481,95 @@ void loop() {
 </div><div class="c-foot"></div></article>
   </main>
 </div>
+
+<script>
+/* =====================================================================
+   ШАПКА УЕЗЖАЕТ ПРИ ПРОКРУТКЕ + ПОЛОСКА ПРОГРЕССА ЧТЕНИЯ
+
+   Зачем: страница урока — это 15 экранов прокрутки, а тёмная шапка
+   занимает сверху 84 пикселя постоянно, то есть примерно три строки
+   текста на каждом экране.
+
+   Как: прячем при движении ВНИЗ, мгновенно возвращаем при движении
+   ВВЕРХ. Так сделано у Medium, Substack, в мобильных Chrome и Safari —
+   к этому пришли все, потому что навигация тогда всегда в одном
+   коротком движении, а не «доскролль до самого верха».
+
+   Что именно уезжает: тёмная подложка и большой логотип. На месте
+   остаются логотип в уменьшенном виде (он оказывается над тёмной
+   рельсой, поэтому подложка ему не нужна) и «Мои проекты» отдельной
+   плашкой в углу. Сам класс вешается на body, вся видимая часть —
+   в theme.css по `body.hdr-away`.
+
+   Порог 140 пикселей: до него шапка всегда на месте, иначе она
+   дёргалась бы от любого случайного касания колеса у самого верха.
+   Порог 5 пикселей на смену направления — от дрожания тачпада.
+
+   На узких экранах (до 820) шапка НЕ уезжает: там в ней живёт кнопка
+   вызова меню, и если шапку убрать, до списка уроков будет не добраться.
+   ===================================================================== */
+(function(){
+  var body = document.body;
+  var fill = document.querySelector('.c-prog > i');
+  var last = 0;
+  var was = null;    /* прошлое состояние, чтобы не дёргать надпись каждый кадр */
+  var GUARD = 140;   /* до этой прокрутки шапка не прячется */
+  var JITTER = 5;    /* меньше этого — считаем дрожанием, не движением */
+
+  /* Надпись на кнопке возврата укорачивается, когда шапка уехала.
+     Причина простая и измеренная: справа от колонки урока остаётся
+     запас около 105 пикселей, и в него кнопка влезает только коротким
+     словом. С полной надписью она вылезает на текст и задевает
+     служебные пометки книги («Часть 4», «Проект 12 / продолжение»),
+     которые стоят у правого края на каждой границе страниц.
+     Текст берём из самой кнопки, а не пишем заново: скрипт ниже меняет
+     её на «← К группе», когда преподаватель пришёл помогать ученику. */
+  function labels(){
+    var back = document.getElementById('backlink');
+    if (!back) return null;
+    var full = back.getAttribute('data-full');
+    if (full === null){ full = back.textContent; back.setAttribute('data-full', full); }
+    return { el: back, full: full, short: full.replace('Мои проекты', 'Проекты') };
+  }
+
+  function onScroll(){
+    var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+
+    if (window.innerWidth <= 820 || y < GUARD){
+      body.classList.remove('hdr-away');
+    } else if (y > last + JITTER){
+      body.classList.add('hdr-away');
+    } else if (y < last - JITTER){
+      body.classList.remove('hdr-away');
+    }
+    last = y;
+
+    var away = body.classList.contains('hdr-away');
+    if (away !== was){
+      was = away;
+      var L = labels();
+      if (L) L.el.textContent = away ? L.short : L.full;
+    }
+
+    if (fill){
+      var room = (document.documentElement.scrollHeight || 0) - window.innerHeight;
+      fill.style.transform = 'scaleX(' + (room > 0 ? Math.min(1, y / room) : 0) + ')';
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  onScroll();
+
+  /* Переключили урок — прокрутка ушла в начало, шапку возвращаем сразу,
+     не дожидаясь, пока человек шевельнёт колесом. */
+  document.addEventListener('click', function(e){
+    if (e.target.closest && e.target.closest('.c-rail a, .c-btn')){
+      setTimeout(function(){ last = 0; onScroll(); }, 60);
+    }
+  }, true);
+})();
+</script>
 
 <script src="config.js"></script>
 <script src="guide/image-slot.js"></script>
