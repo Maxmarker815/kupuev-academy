@@ -1044,3 +1044,11 @@ table.mx thead th, table.mx tbody td{ letter-spacing:0 !important; }
   .gsw{ margin-left:0; width:100%; }
   .gsw button{ flex:1 1 auto; text-align:center; }
 }
+
+/* Выпадающий список внутри переключателя — на случай школы, где групп больше
+   шести и ряд кнопок перестаёт помещаться. Вид тот же, что у кнопок. */
+.gsw select{ border:1px solid var(--rule-strong); background:var(--paper-2); color:var(--ink);
+  padding:7px 13px; border-radius:var(--r-sm); font-family:var(--sans); font-size:13.5px;
+  line-height:1.2; cursor:pointer; }
+.gsw select:hover{ border-color:var(--navy); }
+.gsw select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,.14); outline:0; }

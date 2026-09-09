@@ -184,7 +184,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1788946643">
+<link rel="stylesheet" href="theme.css?v=1788947010">
 </head>
 <body>
 
@@ -1079,12 +1079,40 @@ function viewAdmin(){
   const stu   = scope ? Store.studentsOf(scope) : db.students;
   const ids   = scope ? new Set(stu.map(s => s.id)) : null;
 
-  const head = $(`<div class="section-head"><h2>${scope ? 'Группа' : 'Вся школа'}</h2>
-    <select id="agroup" style="border:1.5px solid var(--rule-strong);background:var(--paper);padding:7px 10px;border-radius:2px">
-      <option value="">Вся школа</option>
-      ${db.groups.map(g => `<option value="${esc(g.code)}"${g.code===scope?' selected':''}>${esc(g.name)}</option>`).join('')}
-    </select>${gTea ? `<span class="sub">${esc(gTea.name)}</span>` : ''}</div>`);
-  head.querySelector('#agroup').onchange = e => { S.adminGroup = e.target.value || null; save(); render(); };
+  /* Переключатель групп — одна и та же деталь в двух местах страницы: здесь,
+     рядом с числами, и внизу у таблицы. Внизу он нужен потому, что таблица —
+     самый конец длинной страницы, и возвращаться наверх ради смены группы
+     это лишний путь. Состояние одно (S.adminGroup), поэтому оба показывают
+     одно и то же и меняют всё, что ниже.
+
+     До шести групп — ряд кнопок: варианты видны сразу, переключение в один
+     клик, и заодно видно, сколько всего групп в школе. Дальше кнопки
+     перестают помещаться в строку, и честнее выпадающий список — он не
+     растёт вместе со школой. */
+  const groupSwitch = () => {
+    const box = $(`<div class="gsw"></div>`);
+    if (db.groups.length > 6){
+      const sel = $(`<select>
+        <option value="">Вся школа</option>
+        ${db.groups.map(g => `<option value="${esc(g.code)}"${g.code===scope?' selected':''}>${esc(g.name)}</option>`).join('')}
+      </select>`);
+      sel.onchange = e => { S.adminGroup = e.target.value || null; save(); render(); };
+      box.appendChild(sel);
+      return box;
+    }
+    const mk = (label, code, full) => {
+      const b = $(`<button type="button" class="${code === scope ? 'on' : ''}" title="${esc(full)}">${esc(label)}</button>`);
+      b.onclick = () => { S.adminGroup = code; save(); render(); };
+      return b;
+    };
+    box.appendChild(mk('Вся школа', null, 'Все группы школы'));
+    db.groups.forEach(g => box.appendChild(mk(shortGroup(g), g.code, g.name)));
+    return box;
+  };
+
+  const head = $(`<div class="section-head has-sw"><h2>${scope ? 'Группа' : 'Вся школа'}</h2>${
+    gObj ? `<span class="sub">${esc(gObj.name)}${gTea ? ' · ' + esc(gTea.name) : ''}</span>` : ''}</div>`);
+  if (db.groups.length) head.appendChild(groupSwitch());
   el.appendChild(head);
 
   const totalDone = stu.reduce((a,s) => a + Store.doneCount(s.id), 0);
@@ -1272,18 +1300,13 @@ function viewAdmin(){
      меняются вместе с таблицей. Двух разных «выбранных групп» на одном
      экране быть не должно — директор перестал бы понимать, к чему относится
      цифра, на которую он смотрит. */
-  const headA = $(`<div class="section-head has-sw"><h2>${scope ? 'Ученики группы по проектам' : 'Все ученики по проектам'}</h2></div>`);
-  if (db.groups.length > 1){
-    const sw = $(`<div class="gsw"></div>`);
-    const mkSw = (label, code, full) => {
-      const b = $(`<button type="button" class="${code === scope ? 'on' : ''}" title="${esc(full)}">${esc(label)}</button>`);
-      b.onclick = () => { S.adminGroup = code; save(); render(); };
-      return b;
-    };
-    sw.appendChild(mkSw('Вся школа', null, 'Все группы школы'));
-    db.groups.forEach(g => sw.appendChild(mkSw(shortGroup(g), g.code, g.name)));
-    headA.appendChild(sw);
-  }
+  /* «Кто где» — это ровно тот вопрос, на который отвечает таблица, и теми же
+     словами, какими платформа описывает кабинет преподавателя («вижу всю
+     группу: кто где, кто застрял и на чём»). Заголовок больше не меняется
+     при смене группы: что выбрано, и так видно по кнопкам справа. */
+  const headA = $(`<div class="section-head has-sw"><h2>Кто где</h2>
+    <span class="sub">каждый ученик и его проекты</span></div>`);
+  if (db.groups.length) headA.appendChild(groupSwitch());
   el.appendChild(headA);
   const wrapA = $(`<div class="scrollx"></div>`);
   const tblA = $(`<table class="mx">
