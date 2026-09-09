@@ -1385,7 +1385,7 @@ table.mx tbody tr.mx-grp th{ white-space:normal !important; }
    Не убирать. */
 
 .pcard .acts{ display:flex !important; align-items:center !important;
-  gap:14px !important; flex-wrap:wrap !important; margin-top:1px !important; }
+  gap:17px !important; flex-wrap:wrap !important; margin-top:1px !important; }
 
 .pcard .acts .btn,
 .pcard .acts .mark{
@@ -1420,11 +1420,41 @@ table.mx tbody tr.mx-grp th{ white-space:normal !important; }
 .pcard .acts .mark,
 .pcard .acts .mark .box{
   transition:color .13s ease, border-color .13s ease,
-             background-color .13s ease, opacity .13s ease !important; }
+             background-color .13s ease, opacity .13s ease,
+             transform .13s ease !important; }
 
 .pcard .acts .btn:hover,
 .pcard .acts .mark:hover{ background:transparent !important;
   text-decoration:none !important; }
+
+/* РОСТ НАДПИСИ ПРИ НАВЕДЕНИИ.
+
+   Только через transform, никогда через font-size. font-size заставил бы
+   страницу пересчитать раскладку: соседние карточки дёрнулись бы, а сама
+   надпись уехала из-под курсора — и наведение сорвалось бы само себя.
+   transform раскладку не трогает вообще, он растягивает уже нарисованное
+   на месте, поэтому соседи стоят как вкопанные.
+
+   Оттуда же и плата за приём: браузер не набирает буквы заново в новом
+   размере, а растягивает готовые — как увеличенная фотография. В момент
+   роста надпись чуть мягче, чем в покое. На мелком тексте это цена
+   приёма, а не поломка; знать про неё надо, чтобы потом не искать
+   «почему буквы мутные».
+
+   transform-origin слева, чтобы левый край и квадратик-галочка стояли
+   на месте, а надпись росла только вправо. Промежуток в .acts поднят
+   с 14 до 17px: на росте два действия иначе почти касаются. */
+.pcard .acts .btn,
+.pcard .acts .mark{ transform-origin:left center !important; }
+.pcard .acts .btn:hover,
+.pcard .acts .mark:hover{ transform:scale(1.07) !important; }
+
+/* Кому система велела не анимировать — тому без роста. Цвет остаётся:
+   он несёт смысл (что случится от нажатия), а рост — только украшение. */
+@media (prefers-reduced-motion: reduce){
+  .pcard .acts .btn:hover,
+  .pcard .acts .mark:hover{ transform:none !important; }
+}
 
 /* «Собрал»: сама кнопка без рамки, но КВАДРАТИК-ГАЛОЧКА остаётся — иначе
    у несобранного проекта не видно, куда нажимать, чтобы отметить.
