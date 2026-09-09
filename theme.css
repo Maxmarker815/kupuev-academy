@@ -1261,3 +1261,48 @@ table.mx tbody th, table.mx tbody td:last-child{ font-size:13px !important; }
   .hero .big{ font-size:30px !important; }
   .stat .v{ font-size:23px !important; }
 }
+
+/* ============ ТАБЛИЦА «ПРОГРЕСС КАЖДОГО»: ПЛОТНЕЕ ============
+
+   Таблица выглядела растянутой: номера проектов сверху были набраны
+   тем же кеглем, что и обычный текст, клетки 36 на 36, строки с большими
+   отступами. На двадцати пяти учениках это превращалось в простыню,
+   по которой глазу далеко ехать.
+
+   Номера сверху — это подписи осей, а не текст для чтения: им хватает
+   мелкого моноширинного. Клетки уменьшены, строки поджаты. Смысл таблицы
+   в том, чтобы вся группа помещалась на один экран, — теперь помещается
+   заметно больше.
+
+   Переключатель групп рядом с заголовком тоже поджат: он служебный. */
+
+table.mx thead th{ font-size:11px !important; padding:6px 3px !important; }
+table.mx thead th a.mxh{ padding:1px 2px !important; }
+table.mx td.cell{ width:29px !important; height:29px !important; font-size:12px !important; }
+table.mx tbody th{ font-size:12.5px !important; padding:5px 12px !important; }
+table.mx tbody td:last-child{ font-size:12.5px !important; padding:0 12px !important; }
+table.mx tbody tr.mx-grp th{ font-size:12.5px !important; padding:7px 12px !important; }
+table.mx tbody tr.mx-grp th .s{ font-size:11.5px !important; }
+.legend{ font-size:11px !important; gap:12px !important; }
+
+.gsw button{ padding:5px 11px !important; font-size:11.5px !important; }
+.gsw select{ padding:5px 10px !important; font-size:11.5px !important; }
+
+@media(max-width:1024px){
+  table.mx td.cell{ width:26px !important; height:26px !important; }
+  table.mx tbody th{ padding:5px 9px !important; }
+}
+
+/* Таблица больше не растягивается на всю ширину карточки.
+   Раньше она была шириной 100%, клетки имели фиксированный размер, и весь
+   лишний простор доставался колонке с именами: между фамилией и первой
+   клеткой зияло полэкрана, и взгляд ехал через пустоту. Теперь ширина по
+   содержимому — имена, сразу за ними сетка. На узком экране карточка
+   по-прежнему прокручивается вбок. */
+table.mx{ width:auto !important; min-width:0 !important; }
+/* Карточка обжимается по таблице, а не тянется на всю ширину: иначе справа
+   от сетки оставалось пустое белое поле в пол-экрана, и блок выглядел
+   недоделанным. На узком экране карточка упирается в край и прокручивается. */
+.scrollx:has(table.mx){ display:inline-block; max-width:100%; vertical-align:top; }
+table.mx tbody th{ line-height:1.25 !important; max-width:300px !important; }
+table.mx tbody tr.mx-grp th{ white-space:normal !important; }
