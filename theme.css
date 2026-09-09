@@ -1396,9 +1396,35 @@ table.mx tbody tr.mx-grp th{ white-space:normal !important; }
   line-height:1.2 !important; text-decoration:none !important;
   width:auto !important; align-self:auto !important; }
 
+/* НАВЕДЕНИЕ — без подчёркивания.
+
+   Подчёркивание на хороших сайтах закреплено за одним смыслом: ссылка,
+   которая куда-то ведёт. А эти две надписи никуда не ведут — одна
+   переключает отметку, вторая открывает окошко. Не тот сигнал.
+
+   Увеличивать надпись тоже не стали. Через font-size нельзя вообще:
+   страница пересчитывает раскладку, соседи дёргаются, а кнопка уезжает
+   из-под курсора. Через transform можно (раскладка не пересчитывается),
+   но на тексте 11.5px переход выглядит мыльным. Сильные продукты
+   увеличивают целые блоки — карточку, плитку, картинку, — а не подписи
+   внутри них.
+
+   Осталось два приёма, которые и работают:
+   1) цвет из тихого в полную силу, с переходом 130 мс — без перехода
+      получается мигание, именно плавность даёт ощущение аккуратной вещи;
+   2) реагирует сам орган управления: рамка галочки зеленеет, а внутри
+      проступает бледная галочка. Наведение показывает не «я подсвечен»,
+      а ЧТО СЛУЧИТСЯ от нажатия. Так сделано в хороших списках задач. */
+
+.pcard .acts .btn,
+.pcard .acts .mark,
+.pcard .acts .mark .box{
+  transition:color .13s ease, border-color .13s ease,
+             background-color .13s ease, opacity .13s ease !important; }
+
 .pcard .acts .btn:hover,
 .pcard .acts .mark:hover{ background:transparent !important;
-  text-decoration:underline !important; text-underline-offset:2px !important; }
+  text-decoration:none !important; }
 
 /* «Собрал»: сама кнопка без рамки, но КВАДРАТИК-ГАЛОЧКА остаётся — иначе
    у несобранного проекта не видно, куда нажимать, чтобы отметить.
@@ -1416,9 +1442,17 @@ table.mx tbody tr.mx-grp th{ white-space:normal !important; }
 .pcard .acts .mark.on{ color:var(--green-dark) !important; }
 .pcard .acts .mark.on .box{ background:var(--green) !important;
   border-color:var(--green) !important; color:#FFF !important; }
-.pcard .acts .mark:hover .box{ border-color:var(--green) !important; }
-.pcard .acts .mark:hover{ color:var(--ink) !important; }
+/* Не отмечен + наведение: буквы в полную силу, рамка квадрата зеленеет,
+   и внутри проступает бледная галочка — предпросмотр нажатия. */
+.pcard .acts .mark:not(.on):hover{ color:var(--ink) !important; }
+.pcard .acts .mark:not(.on):hover .box{ border-color:var(--green) !important; }
+.pcard .acts .mark:not(.on):hover .box::after{ content:'✓';
+  color:var(--green) !important; opacity:.45; font-size:10px; line-height:1; }
+
+/* Отмечен + наведение: зелёный темнеет — понятно, что нажатие снимет отметку. */
 .pcard .acts .mark.on:hover{ color:var(--green-dark) !important; }
+.pcard .acts .mark.on:hover .box{ background:var(--green-dark) !important;
+  border-color:var(--green-dark) !important; }
 
 /* «Не получается» — тише «Собрал», это редкое действие */
 .pcard .acts .btn{ color:var(--ink-3) !important; font-weight:400 !important; }
