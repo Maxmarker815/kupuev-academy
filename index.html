@@ -184,7 +184,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1788960735">
+<link rel="stylesheet" href="theme.css?v=1788962747">
 </head>
 <body>
 
@@ -821,7 +821,7 @@ function viewStudent(){
     const isDone = st === 'done';
 
     const c = $(`<div class="pcard ${st}" data-proj="${p.n}">
-      <div class="pthumb"><img loading="lazy" src="guide/assets/${PHOTO[p.n]}" alt="${esc(p.t)}"></div>
+      <div class="pthumb">${isDone ? `<span class="medal" aria-hidden="true">✓</span>` : ''}<img loading="lazy" src="guide/assets/${PHOTO[p.n]}" alt="${esc(p.t)}"></div>
       <div class="num">${String(p.n).padStart(2,'0')} · ${stars(p.s)} · ${p.m} мин</div>
       <h3>${esc(p.t)}</h3>
       ${st==='stuck' ? `<div><span class="chip stuck">Застрял</span></div>` : ''}
@@ -858,7 +858,10 @@ function viewStudent(){
       }
       render();
     };
-    c.appendChild(mark);
+    // «Собрал» и «Не получается» — обычный текст в одну строку, без рамок и
+    // белых плашек: они сидят прямо на фоне карточки. Поэтому обе живут в
+    // одном ряду .acts, а «Собрал» идёт первым — это главное действие.
+    acts.insertBefore(mark, help);
 
     // Карточка целиком открывает урок: и мышью, и с клавиатуры (Enter или пробел).
     const openLesson = () => { location.href = CONFIG.GUIDE_URL + '#proj-' + p.n; };

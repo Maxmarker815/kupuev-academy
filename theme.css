@@ -37,6 +37,12 @@
   --green:        #17A46B;
   --green-dark:   #0F8555;
   --green-tint:   #E6F7EF;
+  --green-pale:   #E6F7EF;   /* подложка собранной карточки. Подбиралась
+                                 сравнением трёх ступеней в реальном ряду:
+                                 #F1FAF5 на фоне белых карточек не читался
+                                 вообще, #EBF7F1 читался, Максат выбрал ещё
+                                 на ступень сочнее — это значение.
+                                 Меняешь силу подсветки — меняй только его. */
 
   --sans:  'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   /* Заголовки тоже Inter: антиква читалась «книжно», а платформа — не книга.
@@ -388,13 +394,13 @@ table.list td, table.list th, table.mx td, table.mx th{ font-variant-numeric:tab
 .field input:focus, .field select:focus, .field textarea:focus{
       border-color:var(--accent) !important; box-shadow:0 0 0 3px rgba(37,99,235,.14); }
 
-.pcard.done { border-color:var(--green) !important;  background:var(--green-tint) !important; }
+.pcard.done { border-color:var(--rule) !important;   background:var(--green-pale) !important; }
 .pcard.stuck{ border-color:var(--signal) !important; background:var(--signal-tint) !important; }
 .pcard.doing{ border-color:var(--warn) !important;   background:#FFF7E4 !important; }
 .pcard .note{ background:#FFF !important; border-left:3px solid var(--signal) !important; border-radius:6px; }
 /* Фотография собранного проекта: по названию не понять, что предстоит
    собрать, а снимок отвечает на это мгновенно. */
-.pthumb{ aspect-ratio:4/3; overflow:hidden; border-radius:10px;
+.pthumb{ position:relative; aspect-ratio:4/3; overflow:hidden; border-radius:10px;
   background:var(--paper-3); border:1px solid var(--rule); margin-bottom:2px; }
 .pthumb img{ width:100%; height:100%; object-fit:cover; display:block;
   transition:transform .35s ease; }
@@ -1331,23 +1337,92 @@ table.mx tbody tr.mx-grp th{ white-space:normal !important; }
 .pcard .num{ font-size:10px !important; }
 
 /* фон карточки — белый; тревога остаётся заметной */
-.pcard.done{ background:#FFF !important; border-color:var(--rule) !important; }
+/* Собранный проект: бледная зелёная подложка + медаль на фото.
+
+   Почему заливка, а не рамка или одна галочка. Ребёнок обводит взглядом
+   17 карточек и отвечает себе на вопрос «где я уже был» — это задача на скан,
+   а на скан работает пятно цвета: его глаз ловит боковым зрением. Рамку в
+   1.5 пикселя боковое зрение не различает, а мелкую галочку внизу приходится
+   искать на каждой карточке отдельно.
+
+   Почему подложка бледная (--green-pale, а не --green-tint). Красный «застрял»
+   должен догонять взглядом сам, и если зелёного будет столько же по силе,
+   восемь собранных карточек его перекричат. Здесь зелёный слабее красного,
+   а у красного вдобавок своя рамка, плашка и цитата ученика.
+
+   Медаль — не дубль галочки, а награда за нажатие: ребёнок отметил проект и
+   получил знак на фото, а не переставил птичку в списке. Три уровня знака
+   работают вместе только потому, что они разного веса: пятно — для скана,
+   круг — для награды, кнопка внизу — это орган управления, она обязана
+   показывать своё состояние. */
+.pcard.done{ background:var(--green-pale) !important; border-color:var(--rule) !important; }
+.pcard .medal{ position:absolute; top:6px; right:6px; z-index:2;
+  width:26px; height:26px; border-radius:50%;
+  background:var(--green); color:#FFF;
+  font-size:14px; font-weight:700; line-height:1;
+  display:flex; align-items:center; justify-content:center;
+  border:2px solid #FFF; box-shadow:0 1px 4px rgba(0,0,0,.28); }
 .pcard.doing{ background:#FFF !important; border-color:var(--rule) !important; }
 .pcard.stuck{ background:var(--signal-tint) !important; border-color:var(--signal) !important; }
 
-/* «Собрал» — компактная отметка, а не полоса во всю карточку */
-.pcard .mark{ width:auto !important; align-self:flex-start !important;
-  padding:4px 10px !important; font-size:11.5px !important; gap:7px !important; }
-.pcard .mark .box{ width:14px !important; height:14px !important; }
-.pcard .mark.on{ background:transparent !important; border-color:var(--green) !important;
-  color:var(--green-dark) !important; font-weight:600 !important; }
-.pcard .mark.on .box{ background:var(--green) !important; border-color:var(--green) !important;
-  color:#FFF !important; }
+/* ДВА ДЕЙСТВИЯ ВНИЗУ КАРТОЧКИ — «Собрал» и «Не получается».
 
-/* «Не получается» — второстепенное действие */
-.pcard .acts .btn{ font-size:11px !important; padding:3px 9px !important;
-  color:var(--ink-3) !important; border-color:var(--rule) !important; }
-.pcard .acts .btn:hover{ color:var(--ink) !important; border-color:var(--rule-strong) !important; }
+   Обе были кнопками в рамке с белой заливкой. На белой карточке это ещё
+   как-то жило, а на зелёной подложке собранного проекта белые плашки стали
+   заплатками: карточка зелёная, а по ней два белых прямоугольника.
+   Стало: обычный текст прямо на фоне карточки, без рамки и без заливки,
+   в одну строку. «Собрал» первым — это главное действие.
+
+   Заодно ушла целая порода баг с наведением. Общее правило .btn:hover
+   заливает кнопку тёмно-синим и делает буквы белыми, а .mark.on:hover —
+   тёмно-зелёным. Раньше здесь переопределяли только цвет текста и забывали
+   фон, из-за чего надпись пропадала: тёмное на тёмном. Теперь фона нет
+   вообще, и наведение меняет только цвет букв и подчёркивание — сломать
+   такое нечем.
+
+   Подчёркивание при наведении обязательно: карточка целиком нажимается и
+   открывает урок, поэтому текст без рамки надо как-то обозначить нажимаемым.
+   Не убирать. */
+
+.pcard .acts{ display:flex !important; align-items:center !important;
+  gap:14px !important; flex-wrap:wrap !important; margin-top:1px !important; }
+
+.pcard .acts .btn,
+.pcard .acts .mark{
+  background:transparent !important; border:0 !important;
+  padding:0 !important; border-radius:0 !important;
+  box-shadow:none !important; min-height:0 !important;
+  font-size:11.5px !important; font-weight:600 !important;
+  line-height:1.2 !important; text-decoration:none !important;
+  width:auto !important; align-self:auto !important; }
+
+.pcard .acts .btn:hover,
+.pcard .acts .mark:hover{ background:transparent !important;
+  text-decoration:underline !important; text-underline-offset:2px !important; }
+
+/* «Собрал»: сама кнопка без рамки, но КВАДРАТИК-ГАЛОЧКА остаётся — иначе
+   у несобранного проекта не видно, куда нажимать, чтобы отметить.
+   Пустой квадрат = не отмечен, зелёный с галочкой = отмечен. Это обычная
+   галочка из любой анкеты, ребёнку объяснять не надо. НЕ УБИРАТЬ квадрат
+   у неотмеченного состояния: без него кнопка превращается в надпись,
+   и непонятно, что на неё вообще можно нажать. */
+.pcard .acts .mark{ gap:6px !important; color:var(--ink-2) !important; }
+.pcard .acts .mark .box{ box-sizing:border-box !important;
+  width:14px !important; height:14px !important; flex:0 0 14px !important;
+  border:1.5px solid var(--rule-strong) !important; border-radius:3px !important;
+  background:#FFF !important; color:transparent !important;
+  font-size:10px !important; line-height:1 !important;
+  display:flex !important; align-items:center !important; justify-content:center !important; }
+.pcard .acts .mark.on{ color:var(--green-dark) !important; }
+.pcard .acts .mark.on .box{ background:var(--green) !important;
+  border-color:var(--green) !important; color:#FFF !important; }
+.pcard .acts .mark:hover .box{ border-color:var(--green) !important; }
+.pcard .acts .mark:hover{ color:var(--ink) !important; }
+.pcard .acts .mark.on:hover{ color:var(--green-dark) !important; }
+
+/* «Не получается» — тише «Собрал», это редкое действие */
+.pcard .acts .btn{ color:var(--ink-3) !important; font-weight:400 !important; }
+.pcard .acts .btn:hover{ color:var(--ink) !important; }
 
 /* метка «Следующий» — обычными буквами, без разрядки */
 .chip{ text-transform:none !important; letter-spacing:0 !important;
