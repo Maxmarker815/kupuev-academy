@@ -1021,3 +1021,9 @@ table.mx thead th, table.mx tbody td{ letter-spacing:0 !important; }
   color:var(--ink) !important; }
 .lesson .h-label.emph{ font-size:13.8px !important; }
 .lesson th{ font-size:11px !important; font-weight:600 !important; }
+
+/* Вход преподавателя — выбор из списка, под именем его группы.
+   Подпись моноширинным: это коды, а не текст для чтения. */
+.name-list button .sub{display:block;font-family:var(--mono);font-size:11px;
+  letter-spacing:.08em;color:var(--ink-3);margin-top:5px}
+.name-list button:hover .sub{color:var(--ink-2)}
