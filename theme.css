@@ -263,7 +263,22 @@ table.list td, table.list th, table.mx td, table.mx th{ font-variant-numeric:tab
 .panel, .card, .stat, .pcard, .scrollx{ border-radius:var(--r-lg) !important;
          border:1px solid var(--rule) !important; background:var(--paper-2) !important;
          box-shadow:var(--shadow-sm); }
-.section-head{ border-bottom:1px solid var(--rule-strong) !important; }
+/* Заголовок раздела больше не подчёркнут, и вокруг него другой воздух.
+
+   Что было не так. Отступы почти симметричные: 34 сверху, 25 снизу (9 до
+   линии плюс 16 после). Заголовок висел ровно посередине между двумя
+   блоками, и глаз не понимал, к какому он относится — к тому, что выше,
+   или к тому, что ниже. А линия под ним оказывалась второй горизонтальной
+   чертой в шестнадцати пикселях от рамки следующей карточки: две почти
+   слипшиеся линии подряд и давали ощущение мешанины.
+
+   Стало: 60 сверху, 18 снизу, линии нет. Заголовок явно принадлежит тому,
+   что под ним, между разделами появился воздух, а роль разделителя взяла
+   на себя рамка самой карточки — она там и так есть. */
+.section-head{ border-bottom:0 !important; padding-bottom:0 !important;
+               margin:60px 0 18px !important; }
+.section-head:first-child{ margin-top:26px !important; }
+@media(max-width:640px){ .section-head{ margin:40px 0 14px !important; } }
 .tabs{ border-bottom:1px solid var(--rule-strong) !important; }
 .tabs button{ border:1px solid var(--rule) !important; border-bottom:0 !important;
               background:var(--paper-2) !important; color:var(--ink-2) !important;
