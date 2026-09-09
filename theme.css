@@ -1184,3 +1184,28 @@ table.mx tbody td:last-child{ font-size:15px !important; }
 .role b{ font-size:15.5px !important; }
 .login-bg-cap .n{ font-size:34px !important; }
 .login-bg-cap .t{ font-size:15px !important; max-width:30ch !important; }
+
+/* ---- последняя ступень вниз ----
+   Замер экрана: при вкладке на 100% всё рисуется примерно на 12% крупнее
+   CSS-пикселей — системное увеличение дисплея. Такое же увеличение стоит на
+   большинстве школьных ноутбуков, поэтому поправка на него разумна.
+
+   Снята ещё одна десятая с громкого яруса. Спокойный текст 15 и мелкие
+   подписи 13.5 не тронуты второй раз подряд — это порог читаемости, а курс
+   смотрят дети. Дальше вниз не идём: следующая ступень уводит платформу за
+   нижнюю границу нормы для рабочих инструментов. */
+.section-head h2{ font-size:22.5px !important; }
+.pcard h3{ font-size:16px !important; }
+.hero .big{ font-size:40px !important; }
+.hero .grow > div:first-child{ font-size:19px !important; }
+.stat .v{ font-size:30px !important; }
+.login h1{ font-size:29px !important; }
+.login-bg-cap .n{ font-size:30px !important; }
+.stuck-item .nm-row .nm, .stuck-item .nm{ font-size:15px !important; }
+table.mx tbody th, table.mx tbody td:last-child{ font-size:14px !important; }
+.cardh{ font-size:15px !important; }
+@media(max-width:1024px){
+  .section-head h2{ font-size:20px !important; }
+  .hero .big{ font-size:34px !important; }
+  .stat .v{ font-size:26px !important; }
+}
