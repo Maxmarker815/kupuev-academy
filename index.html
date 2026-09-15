@@ -184,7 +184,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1789506667">
+<link rel="stylesheet" href="theme.css?v=1789513090">
 </head>
 <body>
 
@@ -634,12 +634,15 @@ function topbar(){
             : S.role==='teacher' ? Store.teacher(S.teacherId) : {name:'Администратор'};
   const roleLabel = {student:'Ученик', teacher:'Преподаватель', admin:'Администратор'}[S.role];
   const bar = $(`<div class="topbar"><div class="topbar-in">
-    <div class="brand" title="${esc(Store.db.school.name)}"><img class="lg-wide" src="logo.svg" alt="${esc(Store.db.school.name)}"><img class="lg-mark" src="logo-block.svg" alt=""></div>
+    <div class="brand" title="${esc(Store.db.school.name)}"><img class="lg-wide" src="logo.svg" alt="${esc(Store.db.school.name)}"><img class="lg-mark" src="logo-block.svg" alt=""><img class="lg-slim" src="logo-block.svg" alt=""></div>
     <div class="spacer"></div>
     <div class="who">${roleLabel}<b>${esc(who ? who.name : '')}</b></div>
     <button class="btn ghost sm" id="lo">Выйти</button>
   </div></div>`);
   bar.querySelector('#lo').onclick = logout;
+  // Когда шапка сжата в полоску, знак слева работает как «наверх»:
+  // нажал — страница уехала к началу, полная шапка вернулась сама.
+  bar.querySelector('.brand').onclick = () => window.scrollTo({top:0, behavior:'smooth'});
   return bar;
 }
 

@@ -214,16 +214,18 @@ table.list td, table.list th, table.mx td, table.mx th{ font-variant-numeric:tab
 .c-rail{ top:var(--rail-top, var(--top-h)) !important;
          height:calc(100vh - var(--rail-top, var(--top-h))) !important; }
 body.hdr-away{ --rail-top:0px; }
+.c-rail{ transition:top .35s ease, height .35s ease !important; }
 
 /* Шапка не выключается, а РАСТВОРЯЕТСЯ: одна длительность на всё, что
    меняется при прокрутке — подложка, логотип с надписью, кнопка, рельса.
    Раньше подложка гасла за .18с, а логотип выключался через display:none,
-   то есть без анимации вовсе — и шапка «просто пропадала». */
+   то есть без анимации вовсе — и шапка «просто пропадала».
+   (Пробовали по очереди — сначала подложка, потом рельса, чтобы не было
+   щели между ними; Максат посмотрел и вернул одновременное.) */
 .c-top{ transition:background-color .35s ease, border-color .35s ease !important; }
 .c-brand{ transition:opacity .35s ease, visibility 0s linear 0s !important; }
 .c-brand img, .c-top .c-btn{ transition:height .35s ease, background-color .35s ease,
                                         color .35s ease, box-shadow .35s ease !important; }
-.c-rail{ transition:top .35s ease, height .35s ease !important; }
 
 body.hdr-away .c-top{ background:transparent !important;
   border-bottom-color:transparent !important; pointer-events:none !important; }
@@ -237,11 +239,16 @@ body.hdr-away .c-top{ background:transparent !important;
    Поэтому в шаблоне есть второй знак ВНУТРИ рельсы (`.c-rail-brand`),
    приколотый к её верху. Рельса тёмная, значит подложка знаку не нужна,
    а список уроков уезжает под него при прокрутке — накладки нет.
-   Одновременно виден всегда только один знак: в шапке или в рельсе. */
-/* Оба знака всегда в раскладке, переключаются прозрачностью — display
+   Одновременно виден всегда только один знак: в шапке или в рельсе.
+
+   Оба знака всегда в раскладке, переключаются прозрачностью — display
    анимировать нельзя. Знак в рельсе в свёрнутом виде схлопнут по высоте
    (max-height:0), чтобы не отодвигать список уроков, пока шапка на месте;
-   visibility снимает его с клавиатурной навигации. */
+   visibility снимает его с клавиатурной навигации.
+
+   Плашка компактная (знак 38px + отступы), не в высоту шапки. Да, из-за
+   этого список уроков при возврате шапки сдвигается на разницу — Максат
+   видел оба варианта и выбрал этот: плашка в 84px смотрелась пустой. */
 body.hdr-away .c-brand{ opacity:0 !important; visibility:hidden !important;
   transition:opacity .35s ease, visibility 0s linear .35s !important; }
 .c-rail-brand{ display:flex; align-items:center;
@@ -251,12 +258,12 @@ body.hdr-away .c-brand{ opacity:0 !important; visibility:hidden !important;
   max-height:0; overflow:hidden; opacity:0; visibility:hidden;
   transition:max-height .35s ease, padding .35s ease, opacity .35s ease,
              border-color .35s ease, visibility 0s linear .35s; }
-body.hdr-away .c-rail-brand{ max-height:60px !important; opacity:1 !important;
-  visibility:visible !important; padding:9px 18px 8px !important;
-  border-bottom:1px solid rgba(255,255,255,.09) !important;
+body.hdr-away .c-rail-brand{ max-height:54px !important; opacity:1 !important;
+  visibility:visible !important; padding:8px 18px 8px !important;
+  border-bottom:0 !important; /* светлая линия ехала вниз вместе с ростом плашки */
   transition:max-height .35s ease, padding .35s ease, opacity .35s ease,
              border-color .35s ease, visibility 0s linear 0s !important; }
-.c-rail-brand img{ display:block !important; height:25px !important; width:auto !important; }
+.c-rail-brand img{ display:block !important; height:38px !important; width:auto !important; }
 body.hdr-away .c-rail-brand:hover{ background:#14147A !important; }
 
 /* «Мои проекты» — плашка в углу, читаемая над светлым текстом.
@@ -300,17 +307,37 @@ body.hdr-away .c-top .c-btn:hover{ background:var(--navy) !important;
   transition:transform .08s linear; }
 @media print{ .c-prog{ display:none !important; } }
 .topbar{ background:var(--navy) !important; border-bottom:1px solid rgba(255,255,255,.10) !important; }
-/* Шапка кабинета растворяется при прокрутке — как в уроке, теми же 0.35с.
-   Класс hdr-away вешает скрипт в index.html. Шапка sticky: место в потоке
-   она занимает у самого начала страницы, поэтому достаточно погасить
-   подложку и содержимое — текст под ней виден, раскладка не прыгает.
-   pointer-events:none, чтобы невидимая полоса не ловила нажатия. */
-.topbar{ transition:background-color .35s ease, border-color .35s ease !important; }
-.topbar-in{ transition:opacity .35s ease, visibility 0s linear 0s !important; }
-body.hdr-away .topbar{ background:transparent !important;
-  border-bottom-color:transparent !important; pointer-events:none !important; }
-body.hdr-away .topbar-in{ opacity:0 !important; visibility:hidden !important;
-  transition:opacity .35s ease, visibility 0s linear .35s !important; }
+/* Шапка кабинета при прокрутке не исчезает, а СЖИМАЕТСЯ в полоску 50px:
+   слева знак-здание, справа «Выйти», имя уходит. Класс hdr-away вешает
+   скрипт в index.html (та же механика, что в уроке: вниз — сжать,
+   вернуть — только у самого верха). Всё за одни 0.35с.
+
+   Почему полоска, а не пустота. Пустота даёт содержимому на 40px
+   больше, но бренд пропадает с экрана, а «Выйти» — из-под руки.
+   Полоска одинакова на любом мониторе и на телефоне; плавающий знак
+   на поле слева поместился бы только на мониторах шире ~1700.
+
+   Знаки переключаются прозрачностью: широкий логотип со слоганом
+   сжимается по высоте и гаснет, на его месте проявляется здание
+   (logo-block.svg, 38px — тот же знак и размер, что в шапке урока;
+   при 25px надпись «KUPUEV» не читалась, с 34 читается).
+   Клик по знаку в полоске — «наверх» (скрипт в topbar()). */
+.topbar-in{ transition:min-height .35s ease, padding .35s ease !important; }
+.topbar .brand{ position:relative; }
+.topbar .brand img{ transition:height .35s ease, opacity .35s ease; }
+.topbar .lg-slim{ display:block; position:absolute; left:0; top:50%;
+  transform:translateY(-50%); height:38px !important; width:auto !important;
+  opacity:0; visibility:hidden;
+  transition:opacity .35s ease, visibility 0s linear .35s; }
+.topbar .who{ transition:opacity .35s ease, visibility 0s linear 0s; }
+body.hdr-away .topbar-in{ min-height:50px !important; padding-top:0 !important; padding-bottom:0 !important; }
+body.hdr-away .topbar .brand{ cursor:pointer; }
+body.hdr-away .topbar .brand .lg-wide,
+body.hdr-away .topbar .brand .lg-mark{ height:38px !important; opacity:0; }
+body.hdr-away .topbar .lg-slim{ opacity:1; visibility:visible;
+  transition:opacity .35s ease, visibility 0s linear 0s; }
+body.hdr-away .topbar .who{ opacity:0; visibility:hidden;
+  transition:opacity .35s ease, visibility 0s linear .35s; }
 .c-item{ color:#CBD1F0 !important; }
 .c-item:hover{ background:#14147A !important; color:#FFF !important; }
 .c-item.on{ background:#1D1D8A !important; color:#FFF !important; border-left-color:#8FA8FF !important; }
@@ -340,7 +367,7 @@ body.hdr-away .topbar-in{ opacity:0 !important; visibility:hidden !important;
   border:1px solid rgba(255,255,255,.24) !important; color:#EDEFFC !important; }
 .topbar .btn.ghost:hover{ background:rgba(255,255,255,.18) !important; color:#FFF !important; }
 /* «Выйти» — крупнее: в шапке она одна, мельчить незачем */
-.topbar .btn{ padding:10px 20px !important; font-size:15px !important; border-radius:9px !important; }
+.topbar .btn{ padding:8px 16px !important; font-size:13.5px !important; border-radius:9px !important; }
 
 /* =====================================================================
    СОДЕРЖИМОЕ УРОКОВ — места, где в книге цвет прописан жёстко
@@ -842,8 +869,10 @@ table .empty{ padding:28px 16px !important; }
   .btn, .mark, .c-btn, .c-mark, .role, .pcard, .name-list button, .toast{ transition:none; }
   .pcard:hover{ transform:none; }
   /* растворение шапки урока — тоже движение */
-  .c-top, .c-brand, .c-rail, .c-rail-brand, body.hdr-away .c-brand,
-  body.hdr-away .c-rail-brand, .topbar, .topbar-in, body.hdr-away .topbar-in{ transition:none !important; }
+  .c-top, .c-top .c-btn, .c-brand, .c-rail, .c-rail-brand, body.hdr-away .c-top,
+  body.hdr-away .c-top .c-btn, body.hdr-away .c-brand, body.hdr-away .c-rail,
+  body.hdr-away .c-rail-brand, .topbar-in, .topbar .brand img, .topbar .lg-slim, .topbar .who,
+  body.hdr-away .topbar .lg-slim, body.hdr-away .topbar .who{ transition:none !important; }
 }
 
 
