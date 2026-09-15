@@ -184,7 +184,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1788973963">
+<link rel="stylesheet" href="theme.css?v=1789479843">
 </head>
 <body>
 
@@ -780,7 +780,7 @@ function viewStudent(){
 
   const el = document.createDocumentFragment();
   const hero = $(`<div class="hero">
-    <div class="big">${done}<small> / ${NPROJ}</small><div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-top:8px">проектов собрано</div></div>
+    <div class="big">${done}<small> / ${NPROJ}</small><div style="color:var(--ink-3);margin-top:8px">проектов собрано</div></div>
     <div class="grow">
       <div style="font-family:var(--serif);font-size:26px;margin-bottom:4px">${pct < 15 ? 'Только начинаем' : pct < 50 ? 'Хорошо идёшь' : pct < 100 ? 'Больше половины позади' : 'Весь курс пройден!'}</div>
       <p class="muted" style="font-size:13.5px">${cur ? 'Следующий по программе — <b style="color:var(--ink)">Проект ' + String(cur.n).padStart(2,'0') + ' · ' + esc(cur.t) + '</b>' : 'Все проекты закрыты. Красиво.'}</p>

@@ -215,9 +215,15 @@ table.list td, table.list th, table.mx td, table.mx th{ font-variant-numeric:tab
          height:calc(100vh - var(--rail-top, var(--top-h))) !important; }
 body.hdr-away{ --rail-top:0px; }
 
-.c-top{ transition:background-color .18s ease, border-color .18s ease !important; }
-.c-brand img, .c-top .c-btn{ transition:height .18s ease, background-color .18s ease,
-                                        color .18s ease, box-shadow .18s ease !important; }
+/* Шапка не выключается, а РАСТВОРЯЕТСЯ: одна длительность на всё, что
+   меняется при прокрутке — подложка, логотип с надписью, кнопка, рельса.
+   Раньше подложка гасла за .18с, а логотип выключался через display:none,
+   то есть без анимации вовсе — и шапка «просто пропадала». */
+.c-top{ transition:background-color .35s ease, border-color .35s ease !important; }
+.c-brand{ transition:opacity .35s ease, visibility 0s linear 0s !important; }
+.c-brand img, .c-top .c-btn{ transition:height .35s ease, background-color .35s ease,
+                                        color .35s ease, box-shadow .35s ease !important; }
+.c-rail{ transition:top .35s ease, height .35s ease !important; }
 
 body.hdr-away .c-top{ background:transparent !important;
   border-bottom-color:transparent !important; pointer-events:none !important; }
@@ -232,14 +238,25 @@ body.hdr-away .c-top{ background:transparent !important;
    приколотый к её верху. Рельса тёмная, значит подложка знаку не нужна,
    а список уроков уезжает под него при прокрутке — накладки нет.
    Одновременно виден всегда только один знак: в шапке или в рельсе. */
-.c-rail-brand{ display:none; }
-body.hdr-away .c-brand{ display:none !important; }
-body.hdr-away .c-rail-brand{ display:flex !important; align-items:center !important;
-  position:sticky !important; top:0 !important; z-index:3 !important;
-  background:var(--navy) !important; padding:9px 18px 8px !important;
+/* Оба знака всегда в раскладке, переключаются прозрачностью — display
+   анимировать нельзя. Знак в рельсе в свёрнутом виде схлопнут по высоте
+   (max-height:0), чтобы не отодвигать список уроков, пока шапка на месте;
+   visibility снимает его с клавиатурной навигации. */
+body.hdr-away .c-brand{ opacity:0 !important; visibility:hidden !important;
+  transition:opacity .35s ease, visibility 0s linear .35s !important; }
+.c-rail-brand{ display:flex; align-items:center;
+  position:sticky; top:0; z-index:3;
+  background:var(--navy); padding:0 18px;
+  border-bottom:0; border-radius:0;
+  max-height:0; overflow:hidden; opacity:0; visibility:hidden;
+  transition:max-height .35s ease, padding .35s ease, opacity .35s ease,
+             border-color .35s ease, visibility 0s linear .35s; }
+body.hdr-away .c-rail-brand{ max-height:60px !important; opacity:1 !important;
+  visibility:visible !important; padding:9px 18px 8px !important;
   border-bottom:1px solid rgba(255,255,255,.09) !important;
-  border-radius:0 !important; }
-body.hdr-away .c-rail-brand img{ display:block !important; height:25px !important; width:auto !important; }
+  transition:max-height .35s ease, padding .35s ease, opacity .35s ease,
+             border-color .35s ease, visibility 0s linear 0s !important; }
+.c-rail-brand img{ display:block !important; height:25px !important; width:auto !important; }
 body.hdr-away .c-rail-brand:hover{ background:#14147A !important; }
 
 /* «Мои проекты» — плашка в углу, читаемая над светлым текстом */
@@ -443,7 +460,9 @@ body.hdr-away .c-top .c-btn:hover{ background:var(--paper-3) !important;
 .btn.ghost:hover{ background:var(--navy) !important; border-color:var(--navy) !important; color:#FFF !important; }
 
 .hero{ border:1px solid #2B2B92 !important; border-radius:var(--r-lg) !important;
-       background:linear-gradient(135deg,#040057 0%,#1E1E96 100%) !important;
+       /* Ровный, как шапка над ним: два разных синих впритык — это то самое
+          «цвет не тот». Объём блоку даёт фото справа, не градиент. */
+       background:var(--navy) !important;
        color:#F4F7FC !important; box-shadow:var(--shadow);
        /* внутри блока переменные светлые — любой текст на нём читается */
        --ink:#FFFFFF; --ink-2:#D8DBF4; --ink-3:#A6ADDE; --ink-4:#8E96CF;
@@ -461,10 +480,14 @@ body.hdr-away .c-top .c-btn:hover{ background:var(--paper-3) !important;
 .hero *{ color:inherit; }
 .hero .big, .hero .grow > div:first-child{ color:#FFF !important; }
 .hero .big small, .hero .big div{ color:#A6ADDE !important; }
+/* Подпись под большой цифрой — слово, а не штамп: строчные, без разрядки, 12px. */
+.hero .big div{ font-family:var(--sans) !important; font-size:12px !important;
+  letter-spacing:0 !important; text-transform:none !important; }
 .hero .muted{ color:#D8DBF4 !important; }
 .hero .muted b{ color:#FFF !important; }
 .hero .bar{ background:rgba(255,255,255,.16) !important; border:0 !important; }
-.hero .bar i{ background:linear-gradient(90deg,#5FD6A4,#7FB6FF) !important; }
+/* Полоска — «собрано», а значит зелёная целиком. Голубой хвост ничего не значил. */
+.hero .bar i{ background:#5FD6A4 !important; }
 .hero .btn{ background:rgba(255,255,255,.10) !important; border:1px solid rgba(255,255,255,.22) !important;
             color:#FFF !important; }
 .hero .btn:hover{ background:rgba(255,255,255,.20) !important; }
@@ -802,6 +825,9 @@ table .empty{ padding:28px 16px !important; }
   .pcard.flash{ animation:none; }
   .btn, .mark, .c-btn, .c-mark, .role, .pcard, .name-list button, .toast{ transition:none; }
   .pcard:hover{ transform:none; }
+  /* растворение шапки урока — тоже движение */
+  .c-top, .c-brand, .c-rail, .c-rail-brand, body.hdr-away .c-brand,
+  body.hdr-away .c-rail-brand{ transition:none !important; }
 }
 
 
@@ -1249,6 +1275,19 @@ table.mx thead th, table.mx tbody td{ letter-spacing:0 !important; }
   color:var(--ink) !important; }
 .lesson .h-label.emph{ font-size:13.8px !important; }
 .lesson th{ font-size:11px !important; font-weight:600 !important; }
+
+/* В книге эти подписи набраны кирпично-красным (--signal) — на бумаге это
+   просто акцент. На экране красный занят: он значит «застрял», и больше
+   ничего им не красим. Подпись продолжения, «×N» у детали, названия
+   выводов, пометка идеи и подпись языка кода — это не тревога, гасим до
+   обычного вторичного текста. Плашка-предупреждение — это предупреждение,
+   а не тревога, у неё уже есть свой цвет в теме — --warn. */
+.lesson .part, .lesson .comp-head .qty, .lesson td.pin,
+.lesson .idea .mark, .lesson .code-head .lang{
+  color:var(--ink-2) !important;
+}
+.lesson .callout.warn{ border-left-color:var(--warn) !important; }
+.lesson .callout.warn .ic{ color:var(--warn) !important; }
 
 /* Вход преподавателя — выбор из списка, под именем его группы.
    Подпись моноширинным: это коды, а не текст для чтения. */
