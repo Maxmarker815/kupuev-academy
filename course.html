@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="guide/styles.css">
-<link rel="stylesheet" href="theme.css?v=1789479843">
+<link rel="stylesheet" href="theme.css?v=1789506667">
 <style>
 /* =====================================================================
    Курс = уроки внутри платформы. Текст уроков взят из печатной книги
@@ -1515,9 +1515,10 @@ void loop() {
    плашкой в углу. Сам класс вешается на body, вся видимая часть —
    в theme.css по `body.hdr-away`.
 
-   Порог 140 пикселей: до него шапка всегда на месте, иначе она
-   дёргалась бы от любого случайного касания колеса у самого верха.
-   Порог 5 пикселей на смену направления — от дрожания тачпада.
+   Порог 140 пикселей: до него шапка всегда на месте, и только там она
+   возвращается — прокрутка вверх посреди урока её не вызывает, иначе
+   она выворачивалась бы на текст от любого касания колеса.
+   Порог 5 пикселей — от дрожания тачпада при движении вниз.
 
    На узких экранах (до 1140) шапка НЕ уезжает: там в ней живёт кнопка
    вызова меню, и если шапку убрать, до списка уроков будет не добраться.
@@ -1528,25 +1529,14 @@ void loop() {
   var body = document.body;
   var fill = document.querySelector('.c-prog > i');
   var last = 0;
-  var was = null;    /* прошлое состояние, чтобы не дёргать надпись каждый кадр */
   var GUARD = 140;   /* до этой прокрутки шапка не прячется */
   var JITTER = 5;    /* меньше этого — считаем дрожанием, не движением */
 
-  /* Надпись на кнопке возврата укорачивается, когда шапка уехала.
-     Причина простая и измеренная: справа от колонки урока остаётся
-     запас около 105 пикселей, и в него кнопка влезает только коротким
-     словом. С полной надписью она вылезает на текст и задевает
-     служебные пометки книги («Часть 4», «Проект 12 / продолжение»),
-     которые стоят у правого края на каждой границе страниц.
-     Текст берём из самой кнопки, а не пишем заново: скрипт ниже меняет
-     её на «← К группе», когда преподаватель пришёл помогать ученику. */
-  function labels(){
-    var back = document.getElementById('backlink');
-    if (!back) return null;
-    var full = back.getAttribute('data-full');
-    if (full === null){ full = back.textContent; back.setAttribute('data-full', full); }
-    return { el: back, full: full, short: full.replace('Мои проекты', 'Проекты') };
-  }
+  /* Надпись на кнопке возврата НЕ укорачивается: замер показал, что
+     кнопка и с коротким словом лежит внутри колонки урока на ~150px,
+     полная «Мои проекты» шире всего на 35px и ничего не меняет.
+     Под неё могут попасть только пометки «Часть 4» у правого края —
+     на миг, когда граница страницы проезжает под шапкой. */
 
   function onScroll(){
     var y = window.pageYOffset || document.documentElement.scrollTop || 0;
@@ -1555,17 +1545,11 @@ void loop() {
       body.classList.remove('hdr-away');
     } else if (y > last + JITTER){
       body.classList.add('hdr-away');
-    } else if (y < last - JITTER){
-      body.classList.remove('hdr-away');
     }
+    /* Обратно шапка НЕ всплывает от движения вверх — только у самого верха
+       (ветка y < GUARD выше). Иначе любое лёгкое касание колеса вверх
+       посреди урока выворачивало её на текст. */
     last = y;
-
-    var away = body.classList.contains('hdr-away');
-    if (away !== was){
-      was = away;
-      var L = labels();
-      if (L) L.el.textContent = away ? L.short : L.full;
-    }
 
     if (fill){
       var room = (document.documentElement.scrollHeight || 0) - window.innerHeight;

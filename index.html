@@ -184,7 +184,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1789479843">
+<link rel="stylesheet" href="theme.css?v=1789506667">
 </head>
 <body>
 
@@ -1501,6 +1501,32 @@ function adminTeachers(){
 
 /* маленькое подтверждение вместо confirm() */
 function confirmish(msg){ return window.confirm(msg); }
+
+/* =====================================================================
+   ШАПКА РАСТВОРЯЕТСЯ ПРИ ПРОКРУТКЕ
+   Та же механика, что в уроке (шаблон-курса.html): едем вниз — шапка
+   уходит, и возвращается только у самого верха. От движения вверх
+   посреди страницы она НЕ всплывает — иначе выворачивалась бы на
+   содержимое от любого касания колеса. Класс вешается на body, вид —
+   в theme.css по `body.hdr-away .topbar`. В кабинетах прячется всё:
+   рельсы и кнопки возврата тут нет, а «Выйти» посреди страницы не нужна.
+   ===================================================================== */
+(function(){
+  var last = 0;
+  var GUARD = 140;   /* до этой прокрутки шапка всегда на месте */
+  var JITTER = 5;    /* меньше этого — дрожание тачпада, не движение */
+  function onScroll(){
+    var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+    if (y < GUARD){
+      document.body.classList.remove('hdr-away');
+    } else if (y > last + JITTER){
+      document.body.classList.add('hdr-away');
+    }
+    last = y;
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+})();
 
 /* =====================================================================
    СТАРТ

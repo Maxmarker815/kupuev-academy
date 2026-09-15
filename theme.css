@@ -259,14 +259,16 @@ body.hdr-away .c-rail-brand{ max-height:60px !important; opacity:1 !important;
 .c-rail-brand img{ display:block !important; height:25px !important; width:auto !important; }
 body.hdr-away .c-rail-brand:hover{ background:#14147A !important; }
 
-/* «Мои проекты» — плашка в углу, читаемая над светлым текстом */
+/* «Мои проекты» — плашка в углу, читаемая над светлым текстом.
+   Цвет текста — синий явно, не var(--ink): внутри .c-top переменная
+   переопределена в белый, и на белой плашке надпись пропадала. */
 body.hdr-away .c-top .c-btn{ pointer-events:auto !important;
-  background:#FFF !important; color:var(--ink) !important;
-  border:1px solid var(--rule-strong) !important;
+  background:#FFF !important; color:var(--navy) !important;
+  border:1px solid var(--navy) !important;
   box-shadow:0 2px 10px rgba(22,35,61,.14) !important;
   font-size:12px !important; padding:7px 12px !important; }
-body.hdr-away .c-top .c-btn:hover{ background:var(--paper-3) !important;
-  color:var(--ink) !important; border-color:var(--rule-strong) !important; }
+body.hdr-away .c-top .c-btn:hover{ background:var(--navy) !important;
+  color:#FFF !important; border-color:var(--navy) !important; }
 
 /* ============ ПОЛОСКА ПРОГРЕССА ЧТЕНИЯ ============
 
@@ -298,6 +300,17 @@ body.hdr-away .c-top .c-btn:hover{ background:var(--paper-3) !important;
   transition:transform .08s linear; }
 @media print{ .c-prog{ display:none !important; } }
 .topbar{ background:var(--navy) !important; border-bottom:1px solid rgba(255,255,255,.10) !important; }
+/* Шапка кабинета растворяется при прокрутке — как в уроке, теми же 0.35с.
+   Класс hdr-away вешает скрипт в index.html. Шапка sticky: место в потоке
+   она занимает у самого начала страницы, поэтому достаточно погасить
+   подложку и содержимое — текст под ней виден, раскладка не прыгает.
+   pointer-events:none, чтобы невидимая полоса не ловила нажатия. */
+.topbar{ transition:background-color .35s ease, border-color .35s ease !important; }
+.topbar-in{ transition:opacity .35s ease, visibility 0s linear 0s !important; }
+body.hdr-away .topbar{ background:transparent !important;
+  border-bottom-color:transparent !important; pointer-events:none !important; }
+body.hdr-away .topbar-in{ opacity:0 !important; visibility:hidden !important;
+  transition:opacity .35s ease, visibility 0s linear .35s !important; }
 .c-item{ color:#CBD1F0 !important; }
 .c-item:hover{ background:#14147A !important; color:#FFF !important; }
 .c-item.on{ background:#1D1D8A !important; color:#FFF !important; border-left-color:#8FA8FF !important; }
@@ -312,14 +325,17 @@ body.hdr-away .c-top .c-btn:hover{ background:var(--paper-3) !important;
 .c-btn:hover{ background:var(--navy) !important; border-color:var(--navy) !important;
         color:#FFFFFF !important; }
 /* В синей шапке — наоборот, прозрачная со светлым текстом */
-.c-top .c-btn{ background:rgba(255,255,255,.08) !important;
-        border:1px solid rgba(255,255,255,.18) !important;
-        color:#F4F7FC !important; box-shadow:none; }
-.c-top .c-btn:hover{ background:rgba(255,255,255,.16) !important;
-        border-color:rgba(255,255,255,.34) !important; color:#FFFFFF !important; }
-.topbar .btn{ background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.18) !important;
+.c-top .c-btn{ background:rgba(255,255,255,.14) !important;
+        border:1px solid rgba(255,255,255,.26) !important;
+        color:#F4F7FC !important; box-shadow:none;
+        /* размер тот же, что у белой плашки при скрытой шапке (12px / 7×12):
+           при прокрутке кнопка меняет только цвет, а не прыгает в размере */
+        font-size:12px !important; padding:7px 12px !important; }
+.c-top .c-btn:hover{ background:rgba(255,255,255,.22) !important;
+        border-color:rgba(255,255,255,.40) !important; color:#FFFFFF !important; }
+.topbar .btn{ background:rgba(255,255,255,.14) !important; border:1px solid rgba(255,255,255,.26) !important;
               color:#F4F7FC !important; }
-.topbar .btn:hover{ background:rgba(255,255,255,.16) !important; }
+.topbar .btn:hover{ background:rgba(255,255,255,.22) !important; }
 .topbar .btn.ghost{ background:rgba(255,255,255,.10) !important;
   border:1px solid rgba(255,255,255,.24) !important; color:#EDEFFC !important; }
 .topbar .btn.ghost:hover{ background:rgba(255,255,255,.18) !important; color:#FFF !important; }
@@ -827,7 +843,7 @@ table .empty{ padding:28px 16px !important; }
   .pcard:hover{ transform:none; }
   /* растворение шапки урока — тоже движение */
   .c-top, .c-brand, .c-rail, .c-rail-brand, body.hdr-away .c-brand,
-  body.hdr-away .c-rail-brand{ transition:none !important; }
+  body.hdr-away .c-rail-brand, .topbar, .topbar-in, body.hdr-away .topbar-in{ transition:none !important; }
 }
 
 
