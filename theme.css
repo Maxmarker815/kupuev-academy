@@ -719,12 +719,14 @@ table.list td{ border-bottom:1px solid var(--rule) !important; }
   .lesson .proj-title{ font-size:37px !important; }
   .lesson .h-display, .lesson .cover-title{ font-size:31px !important; line-height:1.1 !important; }
 
-  /* ряд «сложность / время / компонентов / библиотеки» — в две колонки */
-  .lesson .proj-stats{ grid-template-columns:1fr 1fr !important; row-gap:12px !important; }
-  .lesson .proj-stat{ padding:0 14px 0 0 !important; }
-  .lesson .proj-stat:nth-child(2n){ border-right:0 !important; }
-  .lesson .proj-stat:nth-child(n+3){ padding-top:12px !important;
-    border-top:1px solid var(--rule) !important; }
+  /* ряд «сложность / время / компонентов / библиотеки» — одной строкой,
+     как KPI-ряд в кабинете: четыре ячейки, волосяные линии между ними.
+     В столбик он читался как четыре отдельных блока (и с разным левым
+     отступом — настольное :not(:first-child) перебивало мобильное). */
+  .lesson .proj-stats{ grid-template-columns:repeat(4,1fr) !important; row-gap:0 !important; }
+  .lesson .proj-stat, .lesson .proj-stat:not(:first-child){ padding:0 12px !important; }
+  .lesson .proj-stat:first-child{ padding-left:0 !important; }
+  .lesson .proj-stat:last-child{ padding-right:0 !important; }
 
   /* состав набора — по одной карточке в ряд, без выхода за края */
   .lesson .comp-grid{ grid-template-columns:1fr 1fr !important;
@@ -779,9 +781,14 @@ table.list td{ border-bottom:1px solid var(--rule) !important; }
   .demo-flag{ font-size:10px !important; padding:5px 10px !important; }
   .reset-demo{ font-size:10px !important; }
   .lesson .comp-grid{ grid-template-columns:1fr !important; }
-  .lesson .proj-stats{ grid-template-columns:1fr !important; }
-  .lesson .proj-stat{ border-right:0 !important; padding:8px 0 !important;
-    border-top:1px solid var(--rule) !important; }
+  /* тот же ряд, только мельче: 4 ячейки по ~85px */
+  .lesson .proj-stats{ padding:10px 0 !important; }
+  .lesson .proj-stat, .lesson .proj-stat:not(:first-child){ padding:0 8px !important; }
+  .lesson .proj-stat:first-child{ padding-left:0 !important; }
+  .lesson .proj-stat:last-child{ padding-right:0 !important; }
+  .lesson .proj-stat .l{ font-size:11px !important; margin-bottom:3px !important; }
+  .lesson .proj-stat .v{ font-size:15px !important; }
+  .lesson .proj-stat .v.stars{ font-size:12px !important; letter-spacing:.02em !important; }
   .stat-row{ grid-template-columns:1fr !important; }
   .stat + .stat{ border-top:1px solid var(--rule) !important; padding-top:14px !important; }
 }
