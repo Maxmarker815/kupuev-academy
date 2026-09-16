@@ -1816,6 +1816,30 @@ document.addEventListener('contextmenu', function(e) { e.preventDefault(); retur
     a.addEventListener('click', function(e){ e.preventDefault(); show(a.dataset.k); });
   });
   document.getElementById('burger').onclick = function(){ rail.classList.toggle('open'); };
+
+  /* Свайп влево по открытому меню закрывает его — как в любой выдвижной
+     панели. Вешаем на саму рельсу, не на весь документ: список — это
+     22 урока и 4 вводных пункта, в нём и так вертикально листают,
+     а тап по уроку меню уже закрывает сам. Порог 40px и требование
+     «влево заметно больше, чем вверх-вниз» — чтобы обычный наклон
+     пальца при прокрутке списка не закрывал меню без намерения. */
+  (function(){
+    var sx = 0, sy = 0, tracking = false;
+    rail.addEventListener('touchstart', function(e){
+      if (!rail.classList.contains('open') || e.touches.length !== 1){ tracking = false; return; }
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+    }, {passive:true});
+    rail.addEventListener('touchend', function(e){
+      if (!tracking) return;
+      tracking = false;
+      var t = e.changedTouches[0];
+      var dx = t.clientX - sx, dy = t.clientY - sy;
+      if (dx < -40 && Math.abs(dx) > Math.abs(dy) * 1.5){
+        rail.classList.remove('open');
+      }
+    }, {passive:true});
+  })();
+
   window.addEventListener('hashchange', function(){ show(location.hash.slice(1)); });
 
   paintRail();
