@@ -1027,6 +1027,11 @@ table.mx tbody tr.mx-grp th .s{ font-weight:500; font-size:13.5px; color:var(--i
 @media(max-width:760px){
   .topbar-in{ min-height:62px !important; padding:8px 16px !important; }
 }
+/* Шапка урока на телефоне: кнопка меню и логотип ближе к краю — 10px
+   вместо 30, зазор между ними 7 вместо 18. Как на сайте-инструкции набора. */
+@media(max-width:600px){
+  .c-top-in{ padding:0 10px !important; gap:7px !important; }
+}
 
 
 /* =====================================================================
