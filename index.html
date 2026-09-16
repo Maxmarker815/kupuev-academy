@@ -184,7 +184,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1789558433">
+<link rel="stylesheet" href="theme.css?v=1789559292">
 </head>
 <body>
 
@@ -585,20 +585,8 @@ function render(){
   const keepY = (_prevScreen === S.screen) ? window.scrollY : 0;
   _prevScreen = S.screen;
   app.innerHTML = '';
-  if (!Store.live){
-    // На входе нужны коды — иначе не зайти преподавателем и админом.
-    // Внутри кабинета они уже не нужны: напоминания про учебные данные достаточно.
-    const flag = $(`<div class="demo-flag">${ S.screen === 'login'
-      ? 'Демонстрация: ученики и группы вымышленные. Код администратора школы — <b>0000</b>.'
-      : 'Демонстрация: данные учебные, хранятся только в этом браузере.'
-    } <button id="reset-demo" class="reset-demo">вернуть в исходный вид</button></div>`);
-    flag.querySelector('#reset-demo').onclick = () => {
-      if (!confirmish('Вернуть демо-данные в исходный вид? Все отметки, сделанные во время показа, сотрутся.')) return;
-      try{ localStorage.removeItem('robo_school_db_v4'); localStorage.removeItem('robo_session'); }catch(e){}
-      location.reload();
-    };
-    app.appendChild(flag);
-  }
+  // Серой плашки «Демонстрация…» больше нет — Максат убрал её с экрана.
+  // Сброс демо-данных перед показом: открыть index.html?reset (см. СТАРТ).
 
   if (S.screen === 'login')        {
     // Фотография собранного проекта справа, растворяется в белый влево.
@@ -1542,6 +1530,13 @@ function confirmish(msg){ return window.confirm(msg); }
       '<div class="login"><div class="panel"><h1 style="font-size:26px">Не получилось связаться с таблицей</h1>' +
       '<p class="lede">' + esc(e.message) + '</p>' +
       '<p class="muted" style="font-size:13.5px">Проверь адрес в CONFIG.API_URL и что скрипт опубликован с доступом «Все» (см. НАСТРОЙКА.md).</p></div></div>';
+    return;
+  }
+  // index.html?reset — вернуть демо-данные в исходный вид перед показом.
+  // Раньше это была кнопка на серой плашке; плашку убрали, ход остался.
+  if (!Store.live && /[?&]reset/.test(location.search)){
+    try{ localStorage.removeItem('robo_school_db_v4'); localStorage.removeItem('robo_session'); }catch(e){}
+    location.replace(location.pathname);
     return;
   }
   restore();

@@ -1147,6 +1147,12 @@ table.mx tbody tr.mx-grp th .s{ font-weight:500; font-size:13.5px; color:var(--i
 .c-item .c-ok{ font-size:12px !important; flex:0 0 13px !important; }
 @media(min-width:1400px){ .c-item{ font-size:12.5px !important; padding:7px 18px !important; } }
 @media(min-width:1700px){ .c-item{ font-size:13px !important; } }
+/* На телефоне рельса — выдвижное меню во всю высоту; левый отступ до цифры
+   был 16px и читался как пустое поле. 10px: не впритык, но собраннее. */
+@media(max-width:1140px){
+  .c-item{ padding:9px 12px 9px 10px !important; gap:7px !important; }
+  .c-item .c-n{ flex:0 0 16px !important; }
+}
 .c-rail-h{ font-size:10px !important; padding:14px 18px 7px !important; }
 
 /* На телефоне книжные двухколоночные блоки не схлопывались: при zoom 1
