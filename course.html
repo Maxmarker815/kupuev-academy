@@ -108,13 +108,24 @@ body.course .toc-rail,body.course .progress-rail{display:none!important}
    в этом диапазоне меню просто уходит за край и вызывается кнопкой, как
    в документации Stripe и MDN. Уроку хватает ширины, множитель обычный,
    костыли убраны. */
+.c-rail-backdrop{display:none}
 @media(max-width:1140px){
   .c-burger{display:inline-block}
   .c-rail{position:fixed;left:0;top:var(--top-h);z-index:55;transform:translateX(-100%);transition:transform .2s;
     box-shadow:6px 0 24px rgba(26,24,20,.18)}
   .c-rail.open{transform:translateX(0)}
+  /* Во время перетаскивания пальцем (класс ставит и снимает скрипт)
+     переход выключен — рельса едет строго под пальцем, без запаздывания
+     на кривую .2s; на touchend класс уходит, и обратно работает плавно. */
+  .c-rail.dragging{transition:none}
   .c-main{padding:18px 16px 80px}
   .lesson{zoom:1}
+  /* Перехватчик показывается только пока меню открыто — тогда получает
+     клики. Прозрачный: белый фон урока и так виден, тап по нему просто
+     закрывает меню, как в любой выдвижной панели. */
+  .c-rail-backdrop{display:block;position:fixed;inset:0;z-index:54;
+    background:transparent;pointer-events:none}
+  .c-rail-backdrop.show{pointer-events:auto}
 }
 /* ---------- полоса «помогаешь ученику» ----------
    Видна только преподавателю и только когда урок открыт кнопкой «Урок»
@@ -171,6 +182,11 @@ body.helping .c-main{padding-bottom:150px}
   <div class="c-sp"></div>
   <a class="c-btn" id="backlink" href="index.html">← Мои проекты</a>
 </div></div>
+
+<!-- Невидимый перехватчик тапа: пока меню открыто, ловит нажатие в любом
+     месте страницы (кроме самого меню) и закрывает его. На компьютере,
+     где меню всегда на месте, не показывается вовсе — см. theme.css. -->
+<div class="c-rail-backdrop" id="railBackdrop"></div>
 
 <div class="c-shell">
   <nav class="c-rail" id="rail">
@@ -1615,6 +1631,11 @@ document.addEventListener('contextmenu', function(e) { e.preventDefault(); retur
 (function(){
  try {
   var rail  = document.getElementById('rail');
+  var railBackdrop = document.getElementById('railBackdrop');
+  /* Открыть/закрыть меню — одно место вместо трёх (бургер, тап по уроку,
+     свайп): вместе с рельсой переключаем и невидимый перехватчик тапа. */
+  function openRail(){ rail.classList.add('open'); if (railBackdrop) railBackdrop.classList.add('show'); }
+  function closeRail(){ rail.classList.remove('open'); if (railBackdrop) railBackdrop.classList.remove('show'); }
   var items = [].slice.call(rail.querySelectorAll('.c-item'));
   var keys  = items.map(function(a){ return a.dataset.k; });
 
@@ -1807,7 +1828,7 @@ document.addEventListener('contextmenu', function(e) { e.preventDefault(); retur
     if (art) paintFoot(art);
     if (location.hash.slice(1) !== key) history.replaceState(null, '', '#' + key);
     window.scrollTo(0,0);
-    rail.classList.remove('open');
+    closeRail();
     var on = rail.querySelector('.c-item.on');
     if (on && on.scrollIntoView) on.scrollIntoView({block:'nearest'});
   }
@@ -1815,28 +1836,66 @@ document.addEventListener('contextmenu', function(e) { e.preventDefault(); retur
   items.forEach(function(a){
     a.addEventListener('click', function(e){ e.preventDefault(); show(a.dataset.k); });
   });
-  document.getElementById('burger').onclick = function(){ rail.classList.toggle('open'); };
+  document.getElementById('burger').onclick = function(){
+    if (rail.classList.contains('open')) closeRail(); else openRail();
+  };
+  /* Тап в любом месте вне меню закрывает его — тем же способом, что
+     и остальные пути (класс снимается, CSS сам анимирует отъезд). */
+  if (railBackdrop) railBackdrop.addEventListener('click', closeRail);
 
-  /* Свайп влево по открытому меню закрывает его — как в любой выдвижной
-     панели. Вешаем на саму рельсу, не на весь документ: список — это
-     22 урока и 4 вводных пункта, в нём и так вертикально листают,
-     а тап по уроку меню уже закрывает сам. Порог 40px и требование
-     «влево заметно больше, чем вверх-вниз» — чтобы обычный наклон
-     пальца при прокрутке списка не закрывал меню без намерения. */
+  /* Свайп влево по открытому меню закрывает его — и едет строго под
+     пальцем, а не прыгает по готовности. Вешаем на саму рельсу, не на
+     весь документ: список — это 22 урока и 4 вводных пункта, в нём
+     и так вертикально листают, а тап по уроку меню уже закрывает сам.
+
+     Первое заметное движение решает, жест это или прокрутка: если
+     вертикали больше, чем по горизонтали, — отдаём событие браузеру
+     и дальше не вмешиваемся. Если горизонтали — переходим на инлайн
+     transform и ведём рельсу 1:1 за пальцем (`.dragging` глушит CSS-
+     переход на время, иначе рельса будет отставать с кривой .2s).
+     Отпустил дальше трети ширины — доезжает и закрывается; меньше —
+     плавно возвращается: возврат уже идёт с переходом, класс `dragging`
+     к этому моменту снят. */
   (function(){
-    var sx = 0, sy = 0, tracking = false;
+    var sx = 0, sy = 0, tracking = false, dragging = false, width = 264;
     rail.addEventListener('touchstart', function(e){
       if (!rail.classList.contains('open') || e.touches.length !== 1){ tracking = false; return; }
-      sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+      tracking = true; dragging = false;
+      width = rail.getBoundingClientRect().width || 264;
+    }, {passive:true});
+    rail.addEventListener('touchmove', function(e){
+      if (!tracking) return;
+      var t = e.touches[0];
+      var dx = t.clientX - sx, dy = t.clientY - sy;
+      if (!dragging){
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+        if (Math.abs(dy) > Math.abs(dx)){ tracking = false; return; }
+        dragging = true;
+        rail.classList.add('dragging');
+      }
+      var x = Math.min(0, Math.max(-width, dx));
+      rail.style.transform = 'translateX(' + x + 'px)';
     }, {passive:true});
     rail.addEventListener('touchend', function(e){
       if (!tracking) return;
       tracking = false;
       var t = e.changedTouches[0];
       var dx = t.clientX - sx, dy = t.clientY - sy;
-      if (dx < -40 && Math.abs(dx) > Math.abs(dy) * 1.5){
-        rail.classList.remove('open');
+      if (dragging){
+        rail.classList.remove('dragging');
+        rail.style.transform = '';
+        dragging = false;
+        if (dx < -width * 0.3) closeRail();
+      } else if (dx < -40 && Math.abs(dx) > Math.abs(dy) * 1.5){
+        /* Очень короткий резкий смах — событий touchmove могло не быть вовсе. */
+        closeRail();
       }
+    }, {passive:true});
+    rail.addEventListener('touchcancel', function(){
+      if (!tracking) return;
+      tracking = false;
+      if (dragging){ rail.classList.remove('dragging'); rail.style.transform = ''; dragging = false; }
     }, {passive:true});
   })();
 
