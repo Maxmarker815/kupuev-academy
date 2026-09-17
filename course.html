@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="guide/styles.css">
-<link rel="stylesheet" href="theme.css?v=1789623007">
+<link rel="stylesheet" href="theme.css?v=1789624934">
 <style>
 /* =====================================================================
    Курс = уроки внутри платформы. Текст уроков взят из печатной книги
@@ -2080,6 +2080,46 @@ document.addEventListener('contextmenu', function(e) { e.preventDefault(); retur
   document.querySelectorAll('.lesson').forEach(function(a){ a.hidden = false; });
   console.error('course:', err);
  }
+})();
+</script>
+<script>
+/* =====================================================================
+   ФОТО ДЕТАЛЕЙ — СРАЗУ ПОСЛЕ ИХ НАЗВАНИЙ, ТОЛЬКО НА УЗКИХ ЭКРАНАХ.
+
+   На бумаге и на компьютере список названий («Компоненты») и ряд фото
+   («Компоненты» ниже, с картинками) — в разных колонках, порядок между
+   ними не важен, читаются параллельно. В одну колонку (≤820px, где
+   .proj-body и так уже складывается в столбик) между ними влезает целый
+   абзац «Что увидишь» и иногда предупреждение — товар и его подпись
+   разрывает посторонний текст.
+
+   Одним CSS это не решить: список названий живёт в .proj-side, а ряд
+   фото — в соседнем блоке, это разные колонки грида, и CSS order
+   переставляет только сами колонки целиком, не их содержимое порознь.
+   Поэтому здесь — перенос самого узла .parts-thumbs сразу после
+   .parts-list, и обратно, если окно снова стало широким. */
+(function(){
+  var moved = [];
+  function apply(){
+    var mobile = matchMedia('(max-width:820px)').matches;
+    if (mobile){
+      document.querySelectorAll('.proj-body').forEach(function(body){
+        var list = body.querySelector('.proj-side .parts-list');
+        var thumbs = body.querySelector('.parts-thumbs');
+        if (!list || !thumbs) return;
+        if (thumbs.previousElementSibling === list) return; // уже переставлен
+        moved.push({el: thumbs, parent: thumbs.parentElement, next: thumbs.nextElementSibling});
+        list.insertAdjacentElement('afterend', thumbs);
+      });
+    } else if (moved.length){
+      moved.forEach(function(m){
+        if (m.next) m.parent.insertBefore(m.el, m.next); else m.parent.appendChild(m.el);
+      });
+      moved.length = 0;
+    }
+  }
+  apply();
+  window.addEventListener('resize', apply);
 })();
 </script>
 </body>

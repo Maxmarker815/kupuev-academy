@@ -398,6 +398,15 @@ body.hdr-away .topbar .who{ opacity:0; visibility:hidden;
                        font-family:var(--sans) !important; text-transform:none !important;
                        letter-spacing:0 !important; font-size:13.5px !important;
                        font-weight:600 !important; color:var(--ink-3) !important; }
+
+/* «Часть N» в .page-header — колонтитул бумажной страницы. Он стоит
+   не только у начала проекта (это отдельный .proj-eyebrow, выше, его
+   не трогаем), а перед КАЖДЫМ внутренним разделом — Теория, Подключение,
+   Код и т.д. У длинного проекта таких колонтитулов пять-шесть, на
+   бумаге это была подсказка «где я в книге», на непрерывной прокрутке —
+   просто повторяющийся шум. Название раздела («Проект N / Теория»)
+   и линия под ним остаются — это уже настоящий ориентир. */
+.lesson .page-header .chapter{ display:none !important; }
 .lesson .proj-title{ line-height:1.18 !important; margin-bottom:16px !important;
                      padding-bottom:2px !important; overflow:visible !important; }
 /* Описание проекта: курсив на целом абзаце тормозит чтение и выглядит
