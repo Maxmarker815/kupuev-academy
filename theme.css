@@ -455,8 +455,16 @@ body.hdr-away .topbar .who{ opacity:0; visibility:hidden;
                background:#FFF !important; }
 .lesson .comp-head{ font-size:10px !important; letter-spacing:.1em !important; }
 .lesson .comp-icon{ height:108px !important; background:var(--paper-3);
-                    border-radius:var(--r-sm); margin-top:auto; }
-.lesson .comp-icon img{ object-fit:contain !important; padding:6px; }
+                    border-radius:var(--r-sm); margin-top:auto; overflow:hidden; }
+.lesson .comp-icon img{ object-fit:contain !important; padding:6px;
+  cursor:zoom-in; transition:transform .15s ease; }
+/* Клик по фото уже открывает увеличенную копию (скрипт в course.html) —
+   не хватало только вида: лёгкий рост при наведении, чтобы было понятно,
+   что фото кликабельно, и курсор-лупа вместо крупной браузерной «руки»
+   (zoom-in — готовое значение курсора, не картинка). Рост — transform,
+   не влияет на раскладку соседей. */
+.lesson .comp-icon:hover img{ transform:scale(1.06); }
+@media(prefers-reduced-motion:reduce){ .lesson .comp-icon:hover img{ transform:none; } }
 .lesson .comp-name{ font-size:12px !important; line-height:1.25 !important; }
 .lesson .comp-desc{ font-size:10px !important; line-height:1.5 !important; }
 .lesson .code pre, .lesson .code{ color:#E8ECFB !important; }
@@ -892,6 +900,24 @@ table .empty{ padding:28px 16px !important; }
    ===================================================================== */
 .c-modal-bg{ position:fixed; inset:0; z-index:400; display:grid; place-items:center;
   background:rgba(22,35,61,.45); backdrop-filter:blur(3px); padding:20px; }
+
+/* Увеличенная копия фото по клику — JS (course.html) создаёт
+   .img-zoom-overlay > img и следующим кадром вешает класс .in;
+   здесь только вид: тёмная подложка, крупная картинка по центру,
+   мягкое появление. Закрывается кликом в любом месте (тот же
+   обработчик снимает .img-zoom-overlay целиком). */
+.img-zoom-overlay{ position:fixed; inset:0; z-index:500; display:grid; place-items:center;
+  background:rgba(15,15,25,.82); backdrop-filter:blur(2px); padding:24px;
+  cursor:zoom-out; animation:zoomBgIn .15s ease; }
+.img-zoom-overlay img{ max-width:min(88vw,900px); max-height:88vh; width:auto; height:auto;
+  border-radius:var(--r-sm); box-shadow:0 20px 60px rgba(0,0,0,.5);
+  opacity:0; transform:scale(.96); transition:opacity .18s ease, transform .18s ease; }
+.img-zoom-overlay img.in{ opacity:1; transform:scale(1); }
+@keyframes zoomBgIn{ from{opacity:0} to{opacity:1} }
+@media(prefers-reduced-motion:reduce){
+  .img-zoom-overlay{ animation:none; }
+  .img-zoom-overlay img{ transition:none; }
+}
 .c-modal{ background:#fff; border:1px solid var(--rule-strong); border-radius:var(--r-lg);
   box-shadow:var(--shadow); max-width:540px; width:100%; padding:26px; }
 .c-modal h3{ font-size:26px; font-weight:600; letter-spacing:-.015em; margin:0 0 8px; color:var(--ink); }

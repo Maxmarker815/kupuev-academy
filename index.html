@@ -184,7 +184,7 @@ table.list code{white-space:nowrap}
 .modal h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
 .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 </style>
-<link rel="stylesheet" href="theme.css?v=1789592754">
+<link rel="stylesheet" href="theme.css?v=1789618268">
 </head>
 <body>
 
@@ -1521,6 +1521,7 @@ function adminTeachers(){
     const pin = right.querySelector('#tp').value.trim();
     const e = right.querySelector('#te');
     if (!name || !pin){ e.textContent='Заполни имя и код.'; return; }
+    if (!/^\d{4,}$/.test(pin)){ e.textContent='Код — только цифры, не меньше четырёх.'; return; }
     if (Store.db.teachers.some(t=>t.pin===pin) || pin===Store.db.school.adminPin){ e.textContent='Такой код уже занят — придумай другой.'; return; }
     await Store.addTeacher({id:'t'+Math.random().toString(36).slice(2,8), name, pin}); render();
   };
