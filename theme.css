@@ -454,7 +454,11 @@ body.hdr-away .topbar .who{ opacity:0; visibility:hidden;
 .lesson .comp{ min-height:0 !important; padding:14px 14px 16px !important; gap:6px !important;
                background:#FFF !important; }
 .lesson .comp-head{ font-size:10px !important; letter-spacing:.1em !important; }
-.lesson .comp-icon{ height:108px !important; background:var(--paper-3);
+/* Квадратная рамка, не плоская: раньше высота была зафиксирована в 108px
+   при куда большей ширине колонки — квадратные и портретные фото деталей
+   в такой плоской рамке казались зажатыми, будто обрезанными. aspect-ratio
+   держит рамку квадратной на любой ширине колонки — 1, 2 или auto-fit. */
+.lesson .comp-icon{ height:auto !important; aspect-ratio:1 !important; background:var(--paper-3);
                     border-radius:var(--r-sm); margin-top:auto; overflow:hidden; }
 .lesson .comp-icon img{ object-fit:contain !important; padding:6px;
   cursor:zoom-in; transition:transform .15s ease; }
