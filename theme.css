@@ -460,15 +460,28 @@ body.hdr-away .topbar .who{ opacity:0; visibility:hidden;
    держит рамку квадратной на любой ширине колонки — 1, 2 или auto-fit. */
 .lesson .comp-icon{ height:auto !important; aspect-ratio:1 !important; background:var(--paper-3);
                     border-radius:var(--r-sm); margin-top:auto; overflow:hidden; }
-.lesson .comp-icon img{ object-fit:contain !important; padding:6px;
-  cursor:zoom-in; transition:transform .15s ease; }
+/* Курсор-лупа для любого увеличиваемого фото — своя, векторная SVG,
+   а не системное значение cursor:zoom-in: оно у части браузеров/ОС
+   рисуется крупно и грубовато. 20×20, две тонкие линии внутри стекла
+   (знак «плюс» — «приближает»), тёмный контур читается на любом фоне
+   фото. Один курсор на обе галереи — «Знакомство с набором» и список
+   деталей внутри проекта (.parts-thumbs) — это одно и то же действие,
+   должно выглядеть одинаково в обоих местах. */
+.lesson .comp-icon img, .lesson .parts-thumbs .thumb img{
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='8' cy='8' r='6' fill='white' fill-opacity='.95' stroke='%231a1a2e' stroke-width='1.5'/%3E%3Cline x1='12.4' y1='12.4' x2='18.3' y2='18.3' stroke='%231a1a2e' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='5.3' y1='8' x2='10.7' y2='8' stroke='%231a1a2e' stroke-width='1.2' stroke-linecap='round'/%3E%3Cline x1='8' y1='5.3' x2='8' y2='10.7' stroke='%231a1a2e' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E")
+    8 8, zoom-in;
+}
+.lesson .comp-icon img{ object-fit:contain !important; padding:6px; transition:transform .15s ease; }
+.lesson .parts-thumbs .thumb img{ transition:transform .15s ease; }
 /* Клик по фото уже открывает увеличенную копию (скрипт в course.html) —
    не хватало только вида: лёгкий рост при наведении, чтобы было понятно,
-   что фото кликабельно, и курсор-лупа вместо крупной браузерной «руки»
-   (zoom-in — готовое значение курсора, не картинка). Рост — transform,
-   не влияет на раскладку соседей. */
+   что фото кликабельно. Рост — transform, не влияет на раскладку соседей. */
 .lesson .comp-icon:hover img{ transform:scale(1.06); }
-@media(prefers-reduced-motion:reduce){ .lesson .comp-icon:hover img{ transform:none; } }
+.lesson .parts-thumbs .thumb:hover img{ transform:scale(1.12); }
+@media(prefers-reduced-motion:reduce){
+  .lesson .comp-icon:hover img, .lesson .parts-thumbs .thumb:hover img{ transform:none; }
+}
 .lesson .comp-name{ font-size:12px !important; line-height:1.25 !important; }
 .lesson .comp-desc{ font-size:10px !important; line-height:1.5 !important; }
 .lesson .code pre, .lesson .code{ color:#E8ECFB !important; }
