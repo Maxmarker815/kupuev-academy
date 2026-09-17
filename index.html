@@ -242,26 +242,29 @@ const STATUS = {
 /* =====================================================================
    ХРАНИЛИЩЕ
    Два режима. Пока CONFIG.API_URL пустой — всё живёт в браузере
-   (демо). Как только адрес вставлен — все запросы уходят в
-   Google-таблицу через Apps Script.
+   (демо). Как только адрес вставлен — все запросы уходят на свой
+   бэкенд (PHP + MySQL на хостинге школы, см. папку backend/ рядом
+   с проектом — не в этом репозитории, там же схема и api.php).
    ===================================================================== */
 const Store = {
   db: null,
   get live(){ return !!CONFIG.API_URL; },
 
-  // --- запрос к Apps Script через JSONP (обходит ограничения браузера) ---
+  // --- запрос к своему api.php ---
+  // Раньше здесь была JSONP-обвязка (script-тег вместо fetch) — это делали
+  // из-за Google Apps Script, у которого нет нормального CORS. На своём
+  // сервере на своём же поддомене эти ограничения не действуют, а JSONP
+  // не умеет ни POST, ни нормальных кодов ошибок — обычный fetch и проще,
+  // и безопаснее (сервер не может исполнить в ответе произвольный код).
   api(action, params){
-    return new Promise((resolve, reject) => {
-      const cb = 'cb_' + Math.random().toString(36).slice(2);
-      const q = new URLSearchParams({action, callback: cb, ...params});
-      const s = document.createElement('script');
-      const timer = setTimeout(() => { cleanup(); reject(new Error('Нет ответа от таблицы')); }, 15000);
-      function cleanup(){ clearTimeout(timer); delete window[cb]; s.remove(); }
-      window[cb] = (data) => { cleanup(); data && data.error ? reject(new Error(data.error)) : resolve(data); };
-      s.onerror = () => { cleanup(); reject(new Error('Не удалось связаться с таблицей')); };
-      s.src = CONFIG.API_URL + '?' + q.toString();
-      document.body.appendChild(s);
-    });
+    return fetch(CONFIG.API_URL + '?action=' + encodeURIComponent(action), {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams(params || {})
+    })
+      .then(r => r.json())
+      .then(d => { if (!d || !d.ok) throw new Error((d && d.error) || 'Сервер не ответил'); return d; })
+      .catch(e => { throw (e instanceof Error ? e : new Error('Не удалось связаться с сервером')); });
   },
 
   async load(){
@@ -278,9 +281,17 @@ const Store = {
 
   async setProgress(studentId, proj, status, note){
     const key = studentId + ':' + proj;
+    const prev = this.db.progress[key];
     this.db.progress[key] = {status, note: note||'', updated: new Date().toISOString()};
-    if (this.live) await this.api('setProgress', {studentId, proj, status, note: note||''});
-    else this.persist();
+    if (this.live){
+      try { await this.api('setProgress', {studentId, proj, status, note: note||''}); }
+      catch(e){
+        // Отметку уже показали на экране (в этом весь смысл — не ждать сеть),
+        // но раз сервер её не принял, откатываем — иначе экран будет врать.
+        if (prev) this.db.progress[key] = prev; else delete this.db.progress[key];
+        throw new Error('Не получилось отправить отметку — пропал интернет. Попробуй ещё раз.');
+      }
+    } else this.persist();
   },
   prog(studentId, proj){
     return this.db.progress[studentId + ':' + proj] || {status:'todo', note:'', updated:null};
@@ -469,7 +480,7 @@ function seedDemo(){
 /* =====================================================================
    СОСТОЯНИЕ ЭКРАНА
    ===================================================================== */
-let S = {screen:'login', role:null, teacherId:null, studentId:null, groupCode:null, adminGroup:null, tab:'groups', modal:null, err:''};
+let S = {screen:'login', role:null, teacherId:null, pendingTeacherId:null, studentId:null, groupCode:null, adminGroup:null, tab:'groups', modal:null, err:''};
 
 // <template> нужен, чтобы браузер правильно разбирал строки таблиц (<tr>, <td>)
 const $ = (h) => { const t=document.createElement('template'); t.innerHTML=h.trim(); return t.content.firstElementChild; };
@@ -561,7 +572,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') refreshOnReturn();
 });
 
-function logout(){ try{localStorage.removeItem('robo_session');}catch(e){} S={screen:'login',role:null,teacherId:null,studentId:null,groupCode:null,adminGroup:null,tab:'groups',modal:null,err:''}; render(); }
+function logout(){ try{localStorage.removeItem('robo_session');}catch(e){} S={screen:'login',role:null,teacherId:null,pendingTeacherId:null,studentId:null,groupCode:null,adminGroup:null,tab:'groups',modal:null,err:''}; render(); }
 
 /* =====================================================================
    РЕНДЕР
@@ -698,11 +709,12 @@ function viewLogin(){
     el.appendChild(p); return el;
   }
 
-  // ВХОД ПРЕПОДАВАТЕЛЯ — выбором из списка, как у учеников.
-  // Код преподаватели не вводят: имя из списка школы плюс его группы под именем.
-  // Код администратора при этом остался — директорский кабинет и должен
-  // ощущаться закрытым.
-  if (S.role === 'teacher'){
+  // ВХОД ПРЕПОДАВАТЕЛЯ — в два шага: выбор себя из списка, потом свой код.
+  // Раньше код не спрашивали вовсе (только имя из списка) — удобно для демо
+  // с выдуманными именами, но на настоящих детях это открытая дверь: любой
+  // с телефона выбирает имя учителя и видит весь класс. Список остаётся —
+  // это быстрее, чем печатать имя, — а код теперь обязателен для входа.
+  if (S.role === 'teacher' && !S.pendingTeacherId){
     const list = Store.db.teachers;
     const p = $(`<div class="panel">
       <h1 style="font-size:31px;margin-bottom:6px">Кто ведёт занятие?</h1>
@@ -719,14 +731,33 @@ function viewLogin(){
     list.forEach(t => {
       const gs = Store.groupsOf(t.id).map(g => g.code).join(' · ');
       const b = $(`<button>${esc(t.name)}${gs ? `<span class="sub">${esc(gs)}</span>` : ''}</button>`);
-      b.onclick = () => {
-        S.teacherId = t.id; S.screen = 'teacher';
-        S.groupCode = (Store.groupsOf(t.id)[0] || {}).code || null;
-        S.err = ''; save(); render();
-      };
+      b.onclick = () => { S.pendingTeacherId = t.id; S.err=''; render(); };
       nl.appendChild(b);
     });
     p.querySelector('#bk').onclick = () => { S.role=null; S.err=''; render(); };
+    el.appendChild(p); return el;
+  }
+
+  // Второй шаг — код именно этого преподавателя (его выдаёт администратор).
+  if (S.role === 'teacher' && S.pendingTeacherId){
+    const t = Store.teacher(S.pendingTeacherId);
+    const p = $(`<div class="panel">
+      <h1 style="font-size:31px;margin-bottom:6px">${esc(t ? t.name : '')}</h1>
+      <p class="lede" style="margin-bottom:22px">Введи свой код — его выдаёт администратор школы.</p>
+      <div class="field"><label>Код</label><input id="pin" type="password" inputmode="numeric" autocomplete="off"></div>
+      <div class="err">${esc(S.err)}</div>
+      <div style="display:flex;gap:9px;margin-top:12px"><button class="btn primary" id="go">Войти</button><button class="btn ghost" id="bk">Назад</button></div>
+    </div>`);
+    const go = () => {
+      const pin = p.querySelector('#pin').value.trim();
+      if (!t || pin !== t.pin){ S.err='Код не подошёл.'; render(); return; }
+      S.teacherId = t.id; S.pendingTeacherId = null; S.screen = 'teacher';
+      S.groupCode = (Store.groupsOf(t.id)[0] || {}).code || null;
+      S.err = ''; save(); render();
+    };
+    p.querySelector('#go').onclick = go;
+    p.querySelector('#pin').onkeydown = e => { if(e.key==='Enter') go(); };
+    p.querySelector('#bk').onclick = () => { S.pendingTeacherId=null; S.err=''; render(); };
     el.appendChild(p); return el;
   }
 
@@ -791,7 +822,8 @@ function viewStudent(){
     acts.appendChild($(`<a class="btn" href="${CONFIG.GUIDE_URL}#proj-${cur.n}">Приступить</a>`));
     const hm = $(`<button class="mark"><span class="box"></span>Собрал</button>`);
     hm.onclick = async () => {
-      await Store.setProgress(me.id, cur.n, 'done', '');
+      try { await Store.setProgress(me.id, cur.n, 'done', ''); }
+      catch(e){ toast(e.message); return; }
       S.flash = cur.n;
       const nx = PROJECTS.find(x => x.n === Store.firstOpen(me.id));
       toast(nx ? 'Проект ' + String(cur.n).padStart(2,'0') + ' собран. Дальше — ' + nx.t
@@ -838,7 +870,8 @@ function viewStudent(){
     </button>`);
     mark.onclick = async (e) => {
       e.stopPropagation();
-      await Store.setProgress(me.id, p.n, isDone ? 'todo' : 'done', '');
+      try { await Store.setProgress(me.id, p.n, isDone ? 'todo' : 'done', ''); }
+      catch(err){ toast(err.message); return; }
       S.flash = p.n;
       if (!isDone){
         const nx = PROJECTS.find(x => x.n === Store.firstOpen(me.id));
@@ -885,7 +918,9 @@ function askStuck(studentId, p){
     bg.querySelector('#cancel').onclick = () => { S.modal=null; render(); };
     bg.querySelector('#ok').onclick = async () => {
       const note = bg.querySelector('#nt').value.trim();
-      S.modal=null; await Store.setProgress(studentId, p.n, 'stuck', note);
+      S.modal=null;
+      try { await Store.setProgress(studentId, p.n, 'stuck', note); }
+      catch(err){ toast(err.message); render(); return; }
       S.flash = p.n;
       toast('Преподаватель увидит это у себя');
       render();
@@ -1018,13 +1053,15 @@ function viewTeacher(){
     // выбирает между ними на ходу, стоя у стола ученика.
     const b1 = $(`<button class="btn sm">Проект работает</button>`);
     b1.onclick = async () => {
-      await Store.setProgress(s.id, p.n, 'done', '');
+      try { await Store.setProgress(s.id, p.n, 'done', ''); }
+      catch(err){ toast(err.message); return; }
       toast(s.name + ' — проект ' + String(p.n).padStart(2,'0') + ' отмечен собранным');
       render();
     };
     const b2 = $(`<button class="btn ghost sm">Помог, доделает</button>`);
     b2.onclick = async () => {
-      await Store.setProgress(s.id, p.n, 'doing', '');
+      try { await Store.setProgress(s.id, p.n, 'doing', ''); }
+      catch(err){ toast(err.message); return; }
       toast(s.name + ' — отметка «застрял» снята, доделывает');
       render();
     };
