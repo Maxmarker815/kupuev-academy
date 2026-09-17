@@ -738,6 +738,14 @@ table.list td{ border-bottom:1px solid var(--rule) !important; }
   .lesson .proj-body{ grid-template-columns:1fr !important; gap:18px !important; }
   .lesson .section-opener .toc-row{ grid-template-columns:auto 1fr auto !important; }
 
+  /* Ряд миниатюр деталей (.parts-thumbs) — в книге у каждого проекта свой
+     отступ сверху в миллиметрах прямо в разметке (0–96mm), вручную
+     подогнанный, чтобы миниатюры вставали у низа печатной страницы.
+     В один столбец на экране текст выше не той длины, что на бумаге —
+     отступ превращается в пустой разрыв, иногда высотой с пол-экрана.
+     Печатной книги это не касается — она этот файл не подключает. */
+  .lesson .parts-thumbs{ margin-top:16px !important; }
+
   /* огромный номер проекта — по размеру экрана */
   .lesson .proj-num{ font-size:56px !important; padding-top:0 !important; }
   .lesson .section-opener .num{ font-size:64px !important; }
